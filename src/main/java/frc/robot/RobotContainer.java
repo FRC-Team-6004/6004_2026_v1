@@ -30,6 +30,7 @@ import frc.robot.commands.CustomPathing;
 import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
+import frc.robot.commands.IntakeRollers;
 import frc.robot.commands.ShooterLeftRun;
 import frc.robot.commands.ShooterRightRun;
 import frc.robot.commands.StorageRun;
@@ -42,7 +43,7 @@ import frc.robot.util.GridDistanceProcessing;
 import frc.robot.subsystems.shooter.Shooter;
 
 public class RobotContainer {
-    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = .70 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -55,6 +56,9 @@ public class RobotContainer {
     public final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+
+    private final CommandXboxController op = new CommandXboxController(1);
+
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -98,14 +102,22 @@ public class RobotContainer {
         //joystick.povUp().onTrue(new ClimberSetPos1(climber));
         //joystick.povDown().onTrue(new ClimberSetPos0(climber));
 
-        joystick.povLeft().onTrue(new IntakeIn(intake));
-        joystick.povRight().onTrue(new IntakeOut(intake));
+        joystick.povLeft().whileTrue(new IntakeIn(intake));
+        joystick.povRight().whileTrue(new IntakeOut(intake));
+        joystick.povUp().whileTrue(new IntakeRollers(intake));
 
-        joystick.leftBumper().whileTrue(new StorageRun(storageSub));
 
-        
+        op.leftBumper().whileTrue(new StorageRun(storageSub));
+
+        /* 
         shooter.setDefaultCommand(
-            new DoubleShooterLR(shooter, () -> joystick.getLeftTriggerAxis(), () -> joystick.getRightTriggerAxis()));
+            new DoubleShooterLR(shooter, 
+                () -> joystick.getLeftTriggerAxis(), 
+                () -> joystick.getRightTriggerAxis(),
+                () -> op.getLeftTriggerAxis(), 
+                () -> op.getRightTriggerAxis(),
+                () -> op.a().getAsBoolean()));
+        */
 
         drivetrain.registerTelemetry(logger::telemeterize);
 

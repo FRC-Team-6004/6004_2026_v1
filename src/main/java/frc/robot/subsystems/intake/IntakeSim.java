@@ -82,4 +82,8 @@ public class IntakeSim implements IntakeIO {
         armSim.setInputVoltage(armInputVolts);
         armSim.update(0.02);
     }
+
+    @Override
+    public void setBrake() {} //todo
+
 }

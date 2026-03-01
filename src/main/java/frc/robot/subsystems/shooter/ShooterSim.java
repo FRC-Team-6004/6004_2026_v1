@@ -57,6 +57,9 @@ public class ShooterSim implements ShooterIO {
         shooters.get(side).sim.setInputVoltage(0.0);
     }
 
+    @Override
+    public void setServoAngle(ShooterSide side, double percent) {} //later
+
     public void periodic() {
         for (ShooterSimUnit unit : shooters.values()) {
             double currentRPM =

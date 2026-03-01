@@ -5,18 +5,26 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.StorageConstants;
 
 public class StorageSub extends SubsystemBase {
-    TalonFX motor;
+    TalonFX groundMotor;
+    SparkFlex topMotor;
 
     /**
      * This subsytem that controls the arm.
      */
     public StorageSub() {
-        motor = new TalonFX(StorageConstants.motorID);
+        groundMotor = new TalonFX(StorageConstants.GroundMotorID);
+        topMotor = new SparkFlex(StorageConstants.RollerMotorID, MotorType.kBrushless);
         
         var motorConfig = new TalonFXConfiguration();
 
@@ -24,6 +32,12 @@ public class StorageSub extends SubsystemBase {
         motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+        groundMotor.getConfigurator().apply(motorConfig);
+
+        var neoConfig = new SparkFlexConfig();
+        neoConfig.idleMode(IdleMode.kBrake);
+        neoConfig.smartCurrentLimit(55);
+        topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
 
     @Override
@@ -35,6 +49,7 @@ public class StorageSub extends SubsystemBase {
      * @param speed motor speed from -1.0 to 1, with 0 stopping it
      */
     public void runMotor(double speed){
-        motor.set(speed);
+        groundMotor.set(speed);
+        topMotor.set(-speed * .7);
     }
 }

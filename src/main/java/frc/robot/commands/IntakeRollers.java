@@ -16,11 +16,13 @@ public class IntakeRollers extends Command {
 
   @Override
   public void execute() {
-    m_intake.runRollers(-6);
+    m_intake.runRollers(-3);
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_intake.runRollers(0);
+  }
 
   @Override
   public boolean isFinished() {

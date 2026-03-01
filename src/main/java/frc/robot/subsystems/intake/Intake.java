@@ -48,6 +48,10 @@ public class Intake extends SubsystemBase {
         io.runArm(speed);
     }
 
+    public void setBrake() {
+        io.setBrake();
+    }
+
     public void setArmPositionRad(double angleRad) {
         io.setArmPosition(angleRad);
     }
