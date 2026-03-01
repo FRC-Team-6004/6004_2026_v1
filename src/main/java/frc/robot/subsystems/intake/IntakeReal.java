@@ -63,14 +63,14 @@ public class IntakeReal implements IntakeIO {
 
         applyConfigWithRetry(pivotLeader, config);
         applyConfigWithRetry(pivotFollower, config);
-        /*
+        
         pivotFollower.setControl(
             new Follower(
                 pivotLeader.getDeviceID(),
                 MotorAlignmentValue.Opposed   // invert follower
             )
         );
-         */
+         
 
         pivotLeader.setPosition(0.0);
     }
@@ -81,13 +81,13 @@ public class IntakeReal implements IntakeIO {
         );
     }
 
-    private void setBrake() {
+    @Override
+    public void setBrake() {
         pivotLeader.setControl(m_brake);
     }
 
     private void moveArm(double speed) {
         pivotLeader.set(speed *.1);
-        pivotFollower.set(-speed *.1);
     }
 
 

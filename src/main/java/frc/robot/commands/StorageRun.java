@@ -17,11 +17,13 @@ public class StorageRun extends Command {
 
   @Override
   public void execute() {
-    storage.runMotor(6);
+    storage.runMotor(3);
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    storage.runMotor(0);
+  }
 
   @Override
   public boolean isFinished() {

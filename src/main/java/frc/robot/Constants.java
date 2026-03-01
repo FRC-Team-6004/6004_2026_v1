@@ -139,27 +139,37 @@ public static int MAP_WIDTH = 32;
     }
 
     public static class ShooterConstants {
-      public static final int kLeftMotorID = 2;
-      public static final int kRightMotorID = 3;
+      public static final int kLeftMotorID = 22;
+      public static final int kRightMotorID = 21;
 
+      public static final int kLeftServoPort = 9;
+      public static final int kRightServoPort = 8;
 
       public static final double kS = 0.0; // V
       public static final double kV = 0.39; // V/RPM
       public static final double kA = 0.0; // V/(RPM/s)
 
       public static final double kMOI = 12.0; // V/(RPM/s)
+
+      public static final int servoIn = 1050;
+      public static final int servoOut = 1950;
+      public static final int servoRange = servoOut - servoIn;
+
     }
 
     public static class IntakeConstants {
-      public static final int kLeftMotorID = 11;
-      public static final int kRightMotorID = 10;
-      public static final int kRollerMotorID = 14;
+      public static final int kLeftMotorID = 23;
+      public static final int kRightMotorID = 24;
+      public static final int kRollerMotorID = 20;
 
       public static final double kGearing = 23;
 
     }
 
     public static class StorageConstants {
-      public static final int motorID = 31;
+      public static final int GroundMotorID = 25;
+      public static final int RollerMotorID = 26;
+
+
     }
 }

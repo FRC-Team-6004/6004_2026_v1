@@ -23,4 +23,6 @@ public interface IntakeIO {
 
     void periodic();
 
+    void setBrake();
+
 }

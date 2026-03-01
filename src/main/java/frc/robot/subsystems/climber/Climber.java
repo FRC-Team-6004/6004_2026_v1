@@ -58,8 +58,8 @@ public class Climber extends SubsystemBase {
         io.periodic();
 
         // Clamp to prevent Mechanism2d inversion
-        double height = Math.max(0.0, getHeightMeters());
+        //double height = Math.max(0.0, getHeightMeters());
         
-        elevator.setLength(height);
+        //elevator.setLength(height);
     }
 }
