@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import frc.robot.util.LoggedTunableNumber;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -21,8 +23,12 @@ public class Shooter extends SubsystemBase {
     private final MechanismLigament2d rightShooter;
     private boolean isSim = false;
 
-    private final XboxController controller = new XboxController(1);
-    //private final XboxController controller2 = new XboxController(2);
+    private LoggedTunableNumber rpm = new LoggedTunableNumber("Shooter/rpm", 0);
+    private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
+
+
+    // private final XboxController controller = new XboxController(1);
+    // private final XboxController controller2 = new XboxController(2);
 
 
     public Shooter() {
@@ -86,23 +92,27 @@ public class Shooter extends SubsystemBase {
         } else if (io instanceof ShooterSim sim) {
             sim.periodic();
         }
-
-        /* 
-        setServoAngle(ShooterSide.LEFT, controller2.getLeftTriggerAxis());
-        setServoAngle(ShooterSide.RIGHT, controller2.getRightTriggerAxis());
-        */
         
-        double leftRPM0 = 4500.0 * controller.getLeftTriggerAxis();
-        double rightRPM0 = 4500.0 * controller.getRightTriggerAxis();
-        setRPM(ShooterSide.LEFT, leftRPM0);
-        setRPM(ShooterSide.RIGHT, rightRPM0);
+        if (cycler == 10) {
+            cycler = 0;
+            setServoAngle(ShooterSide.LEFT, servoAngle.get());
+            setServoAngle(ShooterSide.RIGHT, servoAngle.get());
+        
+            double leftRPM0 = rpm.get();
+            double rightRPM0 = rpm.get();
+            setRPM(ShooterSide.LEFT, leftRPM0);
+            setRPM(ShooterSide.RIGHT, rightRPM0);
+        }
+
+        cycler++;
+
         
 
         double leftRPM = getRPM(ShooterSide.LEFT);
         double rightRPM = getRPM(ShooterSide.RIGHT);
 
-        Logger.recordOutput("/Shooter/Left RPM", leftRPM);
-        Logger.recordOutput("/Shooter/Right RPM", rightRPM);
+        Logger.recordOutput("/Shooter/Left RPM", -leftRPM);
+        Logger.recordOutput("/Shooter/Right RPM", -rightRPM);
 
         if (isSim) {
             leftShooter.setLength(0.1 + leftRPM / 8000.0);

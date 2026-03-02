@@ -3,17 +3,28 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+
 import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.ShooterConstants;
+
 
 import java.util.EnumMap;
 
 public class ShooterReal implements ShooterIO {
 
+    XboxController joystick = new XboxController(2);
+
     private static class ShooterUnit {
         final TalonFX motor;
+        final VelocityTorqueCurrentFOC VTC = new VelocityTorqueCurrentFOC(0)
+            .withAcceleration(10)
+            .withFeedForward(2)
+            .withSlot(0);
         final BangBangController bangBang = new BangBangController();
         final Servo hood;
         double servoPercent = 0.0;
@@ -74,27 +85,18 @@ public class ShooterReal implements ShooterIO {
     /** Call from Shooter subsystem periodic() */
     public void periodic() {
         for (ShooterUnit unit : shooters.values()) {
+
+            unit.hood.setPulseTimeMicroseconds((int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn);
+
             if (unit.targetRPM <= 0.0) {
                 unit.motor.stopMotor();
                 continue;
             }
 
-            double currentRPM =
-                unit.motor.getVelocity().getValueAsDouble() * 60.0;
-
-            double bangVolts =
-                unit.bangBang.calculate(currentRPM, unit.targetRPM) * 12.0;
-
-            double ffVolts =
-                feedforward.calculate(unit.targetRPM);
-
             unit.motor.setControl(
-                voltageRequest.withOutput(
-                    Math.max(-12.0, Math.min(12.0, bangVolts + 0.9 * ffVolts))
-                )
+                unit.VTC.withVelocity(unit.targetRPM / 60)
             );
 
-            unit.hood.setPosition(unit.servoPercent);
         }
     }
 }

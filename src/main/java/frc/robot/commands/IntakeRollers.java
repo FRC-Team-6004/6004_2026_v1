@@ -16,7 +16,7 @@ public class IntakeRollers extends Command {
 
   @Override
   public void execute() {
-    m_intake.runRollers(-3);
+    m_intake.runRollers(-6);
   }
 
   @Override
