@@ -10,21 +10,9 @@ import frc.robot.subsystems.shooter.ShooterSide;
 public class DoubleShooterLR extends Command {
 
   private final Shooter shooter;
-  private final DoubleSupplier leftInput;
-  private final DoubleSupplier rightInput;
-  private final DoubleSupplier leftServo;
-  private final DoubleSupplier rightServo;
-  private final BooleanSupplier enableServo;
 
-
-
-  public DoubleShooterLR(Shooter shooter, DoubleSupplier L_Input, DoubleSupplier R_Input, DoubleSupplier L_Servo, DoubleSupplier R_Servo, BooleanSupplier servoOn) {
+  public DoubleShooterLR(Shooter shooter) {
     this.shooter = shooter;
-    this.leftInput = L_Input;
-    this.rightInput = R_Input;
-    this.leftServo = L_Servo;
-    this.rightServo = R_Servo;
-    this.enableServo = servoOn;
 
     addRequirements(shooter);
   }
@@ -34,21 +22,23 @@ public class DoubleShooterLR extends Command {
 
   @Override
   public void execute() {
-    double leftRPM = 4500.0 * leftInput.getAsDouble();
-    double rightRPM = 4500.0 * rightInput.getAsDouble();
+    double leftRPM = 3500;
+    double rightRPM = 3500;
 
     shooter.setRPM(ShooterSide.LEFT, leftRPM);
     shooter.setRPM(ShooterSide.RIGHT, rightRPM);
-    if (enableServo.getAsBoolean()) {
-      shooter.setServoAngle(ShooterSide.LEFT, leftServo.getAsDouble());
-      shooter.setServoAngle(ShooterSide.RIGHT, rightServo.getAsDouble());
-    }
+
+    shooter.setServoAngle(ShooterSide.LEFT, 0.5);
+    shooter.setServoAngle(ShooterSide.RIGHT, 0.5);
+
   }
 
   @Override
   public void end(boolean interrupted) {
     shooter.setRPM(ShooterSide.LEFT, 0);
     shooter.setRPM(ShooterSide.RIGHT, 0);
+    shooter.setServoAngle(ShooterSide.LEFT, 0);
+    shooter.setServoAngle(ShooterSide.RIGHT, 0);
   }
 
   @Override

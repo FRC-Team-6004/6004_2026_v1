@@ -25,12 +25,7 @@ public class Shooter extends SubsystemBase {
 
     private LoggedTunableNumber rpm = new LoggedTunableNumber("Shooter/rpm", 0);
     private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
-
-
-    // private final XboxController controller = new XboxController(1);
-    // private final XboxController controller2 = new XboxController(2);
-
-
+    
     public Shooter() {
         io = RobotBase.isReal() ? new ShooterReal() : new ShooterSim();
 

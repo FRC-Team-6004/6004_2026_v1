@@ -6,9 +6,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 public class StorageRun extends Command {
   private final StorageSub storage;
+  private double Magnitude;
 
-  public StorageRun(StorageSub m_sub) {
+  public StorageRun(StorageSub m_sub, double magnitude) {
     storage = m_sub;
+    this.Magnitude = magnitude;
     addRequirements(m_sub);
   }
 
@@ -17,7 +19,7 @@ public class StorageRun extends Command {
 
   @Override
   public void execute() {
-    storage.runMotor(3);
+    storage.runMotor(Magnitude);
   }
 
   @Override

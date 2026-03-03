@@ -17,8 +17,6 @@ import java.util.EnumMap;
 
 public class ShooterReal implements ShooterIO {
 
-    XboxController joystick = new XboxController(2);
-
     private static class ShooterUnit {
         final TalonFX motor;
         final VelocityTorqueCurrentFOC VTC = new VelocityTorqueCurrentFOC(0)

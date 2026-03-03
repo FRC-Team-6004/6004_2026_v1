@@ -12,8 +12,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.StorageConstants;
+import frc.robot.util.LoggedTunableNumber;
 
 public class StorageSub extends SubsystemBase {
     TalonFX groundMotor;
@@ -29,19 +29,22 @@ public class StorageSub extends SubsystemBase {
         var motorConfig = new TalonFXConfiguration();
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         groundMotor.getConfigurator().apply(motorConfig);
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
-        neoConfig.smartCurrentLimit(55);
+        neoConfig.smartCurrentLimit(60);
+
         topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
 
     @Override
-    public void periodic() {}
+    public void periodic() {
+
+    }
     /** 
      * This is a method that makes the arm move at your desired speed
      *  Positive values make it spin forward and negative values spin it in reverse
@@ -49,7 +52,7 @@ public class StorageSub extends SubsystemBase {
      * @param speed motor speed from -1.0 to 1, with 0 stopping it
      */
     public void runMotor(double speed){
-        groundMotor.set(speed);
-        topMotor.set(-speed * .7);
+        //groundMotor.set(speed);
+        topMotor.set(speed);
     }
 }

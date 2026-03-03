@@ -28,6 +28,7 @@ public class IntakeReal implements IntakeIO {
     /* ---------------- Motors ---------------- */
     private final TalonFX pivotLeader;
     private final TalonFX pivotFollower;
+    private final TalonFX rollerMotor;
 
     /* ---------------- Controls ---------------- */
     private final NeutralOut m_brake = new NeutralOut();
@@ -39,6 +40,7 @@ public class IntakeReal implements IntakeIO {
     public IntakeReal() {
         pivotLeader   = new TalonFX(IntakeConstants.kLeftMotorID);
         pivotFollower = new TalonFX(IntakeConstants.kRightMotorID);
+        rollerMotor   = new TalonFX(IntakeConstants.kRollerMotorID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -112,7 +114,7 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void runRollers(double speed) {
-
+        rollerMotor.set(speed);
     }
 
     @Override

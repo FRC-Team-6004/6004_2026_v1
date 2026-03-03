@@ -97,17 +97,20 @@ public class RobotContainer {
 
         joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
+        //joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
 
         //joystick.povUp().onTrue(new ClimberSetPos1(climber));
         //joystick.povDown().onTrue(new ClimberSetPos0(climber));
 
         joystick.povLeft().whileTrue(new IntakeIn(intake));
         joystick.povRight().whileTrue(new IntakeOut(intake));
-        joystick.povUp().whileTrue(new IntakeRollers(intake));
+
+        joystick.leftBumper().whileTrue(new IntakeRollers(intake));
 
 
-        op.leftBumper().whileTrue(new StorageRun(storageSub));
+        joystick.leftBumper().whileTrue(new StorageRun(storageSub, 12));
+        joystick.rightBumper().whileTrue(new StorageRun(storageSub, -12));
+
 
         /* 
         shooter.setDefaultCommand(
