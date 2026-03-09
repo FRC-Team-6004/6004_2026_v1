@@ -19,9 +19,6 @@ public class StorageSub extends SubsystemBase {
     TalonFX groundMotor;
     SparkFlex topMotor;
 
-    /**
-     * This subsytem that controls the arm.
-     */
     public StorageSub() {
         groundMotor = new TalonFX(StorageConstants.GroundMotorID);
         topMotor = new SparkFlex(StorageConstants.RollerMotorID, MotorType.kBrushless);
@@ -36,7 +33,7 @@ public class StorageSub extends SubsystemBase {
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
-        neoConfig.smartCurrentLimit(60);
+        neoConfig.smartCurrentLimit(55);
 
         topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
@@ -45,14 +42,9 @@ public class StorageSub extends SubsystemBase {
     public void periodic() {
 
     }
-    /** 
-     * This is a method that makes the arm move at your desired speed
-     *  Positive values make it spin forward and negative values spin it in reverse
-     * 
-     * @param speed motor speed from -1.0 to 1, with 0 stopping it
-     */
+
     public void runMotor(double speed){
-        //groundMotor.set(speed);
+        groundMotor.set(-speed);
         topMotor.set(speed);
     }
 }
