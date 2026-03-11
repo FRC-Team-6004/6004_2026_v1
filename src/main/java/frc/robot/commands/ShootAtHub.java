@@ -12,10 +12,14 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import frc.robot.Constants.PathingConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.shooter.Shooter;
 
 public class ShootAtHub extends Command {
 
     private final CommandSwerveDrivetrain swerve;
+
+    private final Shooter shooter;
+
 
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
@@ -25,9 +29,10 @@ public class ShootAtHub extends Command {
     private static final Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
 
 
-    public ShootAtHub(CommandSwerveDrivetrain drivetrain) {
+    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
         this.swerve = drivetrain;
-        addRequirements(drivetrain);
+        this.shooter = shooterSub;
+        addRequirements(drivetrain, shooterSub);
     }
 
     @Override

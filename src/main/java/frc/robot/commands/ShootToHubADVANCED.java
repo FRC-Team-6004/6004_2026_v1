@@ -8,14 +8,14 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
-import frc.robot.util.AutomationHelpers.ShooterTools;
+import frc.robot.util.ShooterLookup;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 
-public class ShootToHub extends Command {
+public class ShootToHubADVANCED extends Command {
 
-    private final ShooterTools trajHelper;
+    private final ShooterLookup trajHelper;
     private final CommandSwerveDrivetrain swerve;
     private final Shooter shooter;
 
@@ -31,8 +31,8 @@ public class ShootToHub extends Command {
         new FieldCentricFacingAngle()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    public ShootToHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
-        this.trajHelper = new ShooterTools();
+    public ShootToHubADVANCED(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
+        this.trajHelper = new ShooterLookup();
         this.swerve = drivetrain;
         this.shooter = shooterSub;
 

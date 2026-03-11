@@ -151,7 +151,7 @@ public static int MAP_WIDTH = 32;
 
       public static final double kMOI = 12.0; // V/(RPM/s)
 
-      public static final int servoIn = 1000;
+      public static final int servoIn = 1150;
       public static final int servoOut = 1500;
       public static final int servoRange = servoOut - servoIn;
 
