@@ -74,9 +74,9 @@ public class CustomPathing extends Command {
 
         double omega = headingError * ROT_KP;
         swerve.setControl(
-            drive.withVelocityX(vx * speedModifier)
-                 .withVelocityY(vy * speedModifier)
-                 .withRotationalRate(0)
+            drive.withVelocityX(vx * -speedModifier)
+                 .withVelocityY(vy * -speedModifier)
+                 .withRotationalRate(omega)
         );
     }
 

@@ -26,6 +26,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Constants.PathingConstants;
 import frc.robot.commands.ClimberSetPos1;
 import frc.robot.commands.ClimberSetPos0;
+import frc.robot.commands.ClimberUp;
+import frc.robot.commands.ClimberDown;
 import frc.robot.commands.CustomPathing;
 import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
@@ -37,6 +39,7 @@ import frc.robot.commands.StorageRun;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
+import frc.robot.subsystems.VisionSub;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.GridDistanceProcessing;
@@ -61,13 +64,15 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    //private final Climber climber = new Climber();
+    private final Climber climber = new Climber();
 
     private final Shooter shooter = new Shooter();
 
     private final Intake intake = new Intake();
 
     private final StorageSub storageSub = new StorageSub();
+
+    private final VisionSub vision = new VisionSub();
 
     private final GridDistanceProcessing gdp = new GridDistanceProcessing(
         PathingConstants.map,
@@ -96,30 +101,22 @@ public class RobotContainer {
 
         joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        //joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
+        joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
 
-        //joystick.povUp().onTrue(new ClimberSetPos1(climber));
-        //joystick.povDown().onTrue(new ClimberSetPos0(climber));
+        joystick.povUp().onTrue(new ClimberUp(climber));
+        joystick.povDown().onTrue(new ClimberDown(climber));
 
         joystick.povLeft().whileTrue(new IntakeIn(intake));
         joystick.povRight().whileTrue(new IntakeOut(intake));
 
-        //joystick.leftBumper().whileTrue(new IntakeRollers(intake));
 
+        op.leftBumper().whileTrue(new IntakeRollers(intake));
+        op.leftBumper().onTrue(new StorageRun(storageSub, 12));
+        op.leftBumper().onFalse(new StorageRun(storageSub, 0));
 
-        joystick.leftBumper().whileTrue(new StorageRun(storageSub, 12));
-        joystick.rightBumper().whileTrue(new StorageRun(storageSub, -12));
+        op.rightBumper().onTrue(new StorageRun(storageSub, -12));
+        op.rightBumper().onFalse(new StorageRun(storageSub, 0));
 
-
-        /* 
-        shooter.setDefaultCommand(
-            new DoubleShooterLR(shooter, 
-                () -> joystick.getLeftTriggerAxis(), 
-                () -> joystick.getRightTriggerAxis(),
-                () -> op.getLeftTriggerAxis(), 
-                () -> op.getRightTriggerAxis(),
-                () -> op.a().getAsBoolean()));
-        */
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -127,6 +124,7 @@ public class RobotContainer {
     }
 
     public void periodic() {
+        vision.addVisionMeasurement(drivetrain);
     }
 
     public Command getAutonomousCommand() {

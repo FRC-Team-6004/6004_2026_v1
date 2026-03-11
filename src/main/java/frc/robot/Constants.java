@@ -114,7 +114,7 @@ public static int MAP_WIDTH = 32;
     }
 
   public static class ClimberConstants {
-      public static final int kMotorID = 0;
+      public static final int kMotorID = 50;
       public static final int kCurrentLimit = 50;
 
       public static final double kP = 32;

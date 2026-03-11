@@ -26,7 +26,7 @@ public class StorageSub extends SubsystemBase {
         var motorConfig = new TalonFXConfiguration();
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         groundMotor.getConfigurator().apply(motorConfig);

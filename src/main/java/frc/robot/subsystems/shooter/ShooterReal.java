@@ -25,6 +25,8 @@ public class ShooterReal implements ShooterIO {
             .withSlot(0);
         final BangBangController bangBang = new BangBangController();
         final Servo hood;
+        double oldSP = 0.0;
+        double oldTRPM = 0.0;
         double servoPercent = 0.0;
         double targetRPM = 0.0;
 
@@ -84,16 +86,22 @@ public class ShooterReal implements ShooterIO {
     public void periodic() {
         for (ShooterUnit unit : shooters.values()) {
 
-            unit.hood.setPulseTimeMicroseconds((int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn);
-
-            if (unit.targetRPM <= 0.0) {
-                unit.motor.stopMotor();
-                continue;
+            if (unit.oldSP != unit.servoPercent) {
+                unit.hood.setPulseTimeMicroseconds((int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn);
             }
 
-            unit.motor.setControl(
-                unit.VTC.withVelocity(unit.targetRPM / 60)
-            );
+            if (unit.oldTRPM != unit.targetRPM) {
+                unit.oldTRPM = unit.targetRPM;
+                if (unit.targetRPM <= 0.0) {
+                    unit.motor.stopMotor();
+                    continue;
+                } 
+
+                unit.motor.setControl(
+                    unit.VTC.withVelocity(unit.targetRPM / 60)
+                );
+            }
+
 
         }
     }

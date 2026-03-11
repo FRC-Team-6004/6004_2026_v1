@@ -23,7 +23,7 @@ public class ClimberReal implements ClimberIO {
     private final PIDController pid;  
 
     public ClimberReal () {
-        motor = new SparkMax(0, MotorType.kBrushless);
+        motor = new SparkMax(ClimberConstants.kMotorID, MotorType.kBrushless);
 
         motor.setCANTimeout(250);
         SparkMaxConfig motorConfig = new SparkMaxConfig();
