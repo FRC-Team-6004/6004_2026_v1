@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -54,7 +54,8 @@ public class VisionSub extends SubsystemBase {
         try {
             fieldLayout = AprilTagFieldLayout.loadFromResource("/frc/robot/2026AprilTags.json");
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load AprilTag layout", e);
+            fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+            // throw new RuntimeException("Failed to load AprilTag layout", e);
         }
 
         hubFwdEstimator = new PhotonPoseEstimator(fieldLayout, robotToHubFwd);

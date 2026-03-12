@@ -13,7 +13,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 
-public class ShootToHubADVANCED extends Command {
+public class ShootToHub extends Command {
 
     private final ShooterLookup trajHelper;
     private final CommandSwerveDrivetrain swerve;
@@ -31,7 +31,7 @@ public class ShootToHubADVANCED extends Command {
         new FieldCentricFacingAngle()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    public ShootToHubADVANCED(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
+    public ShootToHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
         this.trajHelper = new ShooterLookup();
         this.swerve = drivetrain;
         this.shooter = shooterSub;
