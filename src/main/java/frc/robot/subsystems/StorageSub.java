@@ -33,7 +33,7 @@ public class StorageSub extends SubsystemBase {
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
-        neoConfig.smartCurrentLimit(55);
+        neoConfig.smartCurrentLimit(40);
 
         topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
@@ -43,8 +43,11 @@ public class StorageSub extends SubsystemBase {
 
     }
 
-    public void runMotor(double speed){
+    public void runGround(double speed){
         groundMotor.set(-speed);
+    }
+
+    public void runNeo(double speed){
         topMotor.set(speed);
     }
 }

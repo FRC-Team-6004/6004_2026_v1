@@ -36,9 +36,12 @@ import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
 import frc.robot.commands.IntakeRollers;
+import frc.robot.commands.ShootAtHub;
 import frc.robot.commands.ShooterLeftRun;
 import frc.robot.commands.ShooterRightRun;
 import frc.robot.commands.StorageRun;
+import frc.robot.commands.intakeCommand;
+import frc.robot.commands.unjam;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
@@ -120,13 +123,11 @@ public class RobotContainer {
             )
         );
         
-        joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
+        // joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
 
         joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
-
-
+        // joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
 
         joystick.povUp().onTrue(new ClimberUp(climber));
         joystick.povDown().onTrue(new ClimberDown(climber));
@@ -135,12 +136,11 @@ public class RobotContainer {
         joystick.povRight().whileTrue(new IntakeOut(intake));
 
 
-        op.leftBumper().whileTrue(new IntakeRollers(intake));
-        op.leftBumper().onTrue(new StorageRun(storageSub, 12));
-        op.leftBumper().onFalse(new StorageRun(storageSub, 0));
+        op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
+        op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightBumper().onTrue(new StorageRun(storageSub, -12));
-        op.rightBumper().onFalse(new StorageRun(storageSub, 0));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+
 
 
         drivetrain.registerTelemetry(logger::telemeterize);

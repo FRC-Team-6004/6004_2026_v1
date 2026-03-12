@@ -12,13 +12,20 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import frc.robot.Constants.PathingConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterSide;
+import frc.robot.util.ShooterLookup;
 
 public class ShootAtHub extends Command {
 
     private final CommandSwerveDrivetrain swerve;
 
     private final Shooter shooter;
+
+    private final ShooterLookup shootTable;
+
+    private final StorageSub storage;
 
 
     private final SwerveRequest.FieldCentric drive =
@@ -29,10 +36,12 @@ public class ShootAtHub extends Command {
     private static final Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
 
 
-    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub) {
+    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub) {
+        this.storage = ssub;
+        this.shootTable = new ShooterLookup();
         this.swerve = drivetrain;
         this.shooter = shooterSub;
-        addRequirements(drivetrain, shooterSub);
+        addRequirements(drivetrain, shooterSub, ssub);
     }
 
     @Override
@@ -51,6 +60,20 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(omega)
         );
+
+        double distance = currentPose.getTranslation().getDistance(hubPos.getTranslation());
+
+        double RPM = shootTable.getRPM(distance);
+        double servo = shootTable.getServo(distance);
+
+        shooter.setRPM(ShooterSide.LEFT, RPM);
+        shooter.setRPM(ShooterSide.RIGHT, RPM);
+
+        shooter.setServoAngle(ShooterSide.LEFT, servo);
+        shooter.setServoAngle(ShooterSide.RIGHT, servo);
+
+        storage.runNeo(12);
+        storage.runGround(8);
     }
 
     @Override
