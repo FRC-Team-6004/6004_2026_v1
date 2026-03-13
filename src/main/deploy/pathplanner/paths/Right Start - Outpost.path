@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.911,
-        "y": 4.126
+        "x": 4.000242510699001,
+        "y": 0.655
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7817817319098466,
-        "y": 2.9214602609727174
+        "x": 2.1066987112597304,
+        "y": 0.6586888672237634
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Start -Right Trench"
     },
     {
       "anchor": {
-        "x": 0.52338078291815,
-        "y": 0.6835112692763936
+        "x": 0.6491298145506419,
+        "y": 0.655
       },
       "prevControl": {
-        "x": 2.158778173190986,
-        "y": 2.318908659549229
+        "x": 3.275591542613541,
+        "y": 0.6555747480276557
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Outpost"
     }
   ],
   "rotationTargets": [],
@@ -45,10 +45,10 @@
     "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Start",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

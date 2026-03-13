@@ -3,8 +3,10 @@
   "robotLength": 0.864,
   "holonomicMode": true,
   "pathFolders": [
-    "depo",
-    "double dip"
+    "Annoying Auto",
+    "One dip - left",
+    "Shoot",
+    "Start"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.6,

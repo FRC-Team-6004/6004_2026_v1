@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,16 +31,18 @@ import frc.robot.Constants.PathingConstants;
 import frc.robot.commands.ClimberSetPos1;
 import frc.robot.commands.ClimberSetPos0;
 import frc.robot.commands.ClimberUp;
+import frc.robot.commands.AutoCommands;
 import frc.robot.commands.ClimberDown;
 import frc.robot.commands.CustomPathing;
 import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
 import frc.robot.commands.IntakeRollers;
+import frc.robot.commands.ManualShooter;
 import frc.robot.commands.ShootAtHub;
 import frc.robot.commands.ShooterLeftRun;
 import frc.robot.commands.ShooterRightRun;
-import frc.robot.commands.StorageRun;
+import frc.robot.commands.fieldShot;
 import frc.robot.commands.intakeCommand;
 import frc.robot.commands.unjam;
 import frc.robot.generated.TunerConstants;
@@ -59,6 +62,9 @@ import com.pathplanner.lib.trajectory.*;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import frc.robot.util.NamedCommandManager;
+
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
 
 
 
@@ -80,6 +86,8 @@ public class RobotContainer {
 
     private final CommandXboxController op = new CommandXboxController(1);
 
+    private final Joystick manualJoystick = new Joystick(2);
+
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final Climber climber = new Climber();
@@ -92,6 +100,7 @@ public class RobotContainer {
 
     private final VisionSub vision = new VisionSub();
 
+
     private final SendableChooser<Command> autoChooser;       
 
     private final GridDistanceProcessing gdp = new GridDistanceProcessing(
@@ -102,9 +111,20 @@ public class RobotContainer {
         PathingConstants.MAP_WIDTH);
 
     public RobotContainer() {
+
+        CommandScheduler.getInstance().registerSubsystem(drivetrain);
+        CommandScheduler.getInstance().registerSubsystem(shooter);
+        CommandScheduler.getInstance().registerSubsystem(storageSub);
+        CommandScheduler.getInstance().registerSubsystem(intake);
+
+        NamedCommands.registerCommand("shoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub));
+        NamedCommands.registerCommand("intakeOut", AutoCommands.extendAuto(intake));
+        NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake, storageSub));
+        NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake, storageSub));
+
         NamedCommandManager.registerNamedCommands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        autoChooser = AutoBuilder.buildAutoChooser("mid - shoot");  
 
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -140,8 +160,9 @@ public class RobotContainer {
         op.rightBumper().whileTrue(new unjam(storageSub));
 
         op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
-
+        op.a().whileTrue(new ManualShooter(shooter, storageSub, () -> manualJoystick.getRawAxis(0)));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 

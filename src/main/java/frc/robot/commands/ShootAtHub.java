@@ -6,8 +6,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import frc.robot.Constants.PathingConstants;
@@ -16,6 +21,8 @@ import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.util.ShooterLookup;
+
+import com.pathplanner.lib.util.FlippingUtil;
 
 public class ShootAtHub extends Command {
 
@@ -27,16 +34,21 @@ public class ShootAtHub extends Command {
 
     private final StorageSub storage;
 
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+
 
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private static final double ROT_KP = 3.5;
-    private static final Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
+    private static Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
 
 
     public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub) {
+        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+            hubPos = FlippingUtil.flipFieldPose(hubPos);
+        }
         this.storage = ssub;
         this.shootTable = new ShooterLookup();
         this.swerve = drivetrain;
@@ -83,6 +95,11 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(0)
         );
+        shooter.setRPM(ShooterSide.LEFT, 0);
+        shooter.setRPM(ShooterSide.RIGHT, 0);
+
+        shooter.setServoAngle(ShooterSide.LEFT, .2);
+        shooter.setServoAngle(ShooterSide.RIGHT, .2);
     }
 
     @Override
