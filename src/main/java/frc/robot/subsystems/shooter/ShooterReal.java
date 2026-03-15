@@ -87,7 +87,9 @@ public class ShooterReal implements ShooterIO {
         for (ShooterUnit unit : shooters.values()) {
 
             if (unit.oldSP != unit.servoPercent) {
-                unit.hood.setPulseTimeMicroseconds((int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn);
+                int servo = (int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
+                servo = Math.max(Math.min(servo, 4000), 1);
+                unit.hood.setPulseTimeMicroseconds(servo);
             }
 
             if (unit.oldTRPM != unit.targetRPM) {

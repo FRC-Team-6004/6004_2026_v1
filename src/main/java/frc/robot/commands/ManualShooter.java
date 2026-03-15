@@ -58,6 +58,9 @@ public class ManualShooter extends Command {
 
         shooter.setServoAngle(ShooterSide.LEFT, .2);
         shooter.setServoAngle(ShooterSide.RIGHT, .2);
+
+        storage.runNeo(0);
+        storage.runGround(0);
     }
 
     @Override

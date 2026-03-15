@@ -30,7 +30,7 @@ public class ClimberReal implements ClimberIO {
         motorConfig.voltageCompensation(10);
         motorConfig.smartCurrentLimit(ClimberConstants.kCurrentLimit);
         motorConfig.idleMode(IdleMode.kBrake);
-        motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         encoder = motor.getEncoder();
         pid = new PIDController(ClimberConstants.kP, ClimberConstants.kI, ClimberConstants.kD);

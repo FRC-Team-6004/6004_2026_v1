@@ -23,8 +23,8 @@ public class Shooter extends SubsystemBase {
     private final MechanismLigament2d rightShooter;
     private boolean isSim = false;
 
-    private LoggedTunableNumber rpm = new LoggedTunableNumber("Shooter/rpm", 0);
-    private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
+    // private LoggedTunableNumber rpm = new LoggedTunableNumber("Shooter/rpm", 0);
+    // private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
     
     public Shooter() {
         io = RobotBase.isReal() ? new ShooterReal() : new ShooterSim();
@@ -88,18 +88,18 @@ public class Shooter extends SubsystemBase {
             sim.periodic();
         }
         
-        if (cycler == 10) {
-            cycler = 0;
-            setServoAngle(ShooterSide.LEFT, servoAngle.get());
-            setServoAngle(ShooterSide.RIGHT, servoAngle.get());
+        // if (cycler == 10) {
+        //     cycler = 0;
+        //     setServoAngle(ShooterSide.LEFT, servoAngle.get());
+        //     setServoAngle(ShooterSide.RIGHT, servoAngle.get());
         
-            double leftRPM0 = rpm.get();
-            double rightRPM0 = rpm.get();
-            setRPM(ShooterSide.LEFT, leftRPM0);
-            setRPM(ShooterSide.RIGHT, rightRPM0);
-        }
+        //     double leftRPM0 = rpm.get();
+        //     double rightRPM0 = rpm.get();
+        //     setRPM(ShooterSide.LEFT, leftRPM0);
+        //     setRPM(ShooterSide.RIGHT, rightRPM0);
+        // }
 
-        cycler++;
+        // cycler++;
 
         
 

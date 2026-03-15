@@ -86,7 +86,7 @@ public class RobotContainer {
 
     private final CommandXboxController op = new CommandXboxController(1);
 
-    private final Joystick manualJoystick = new Joystick(2);
+    // private final Joystick manualJoystick = new Joystick(2);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -98,7 +98,7 @@ public class RobotContainer {
 
     private final StorageSub storageSub = new StorageSub();
 
-    private final VisionSub vision = new VisionSub();
+    public final VisionSub vision = new VisionSub();
 
 
     private final SendableChooser<Command> autoChooser;       
@@ -117,7 +117,7 @@ public class RobotContainer {
         CommandScheduler.getInstance().registerSubsystem(storageSub);
         CommandScheduler.getInstance().registerSubsystem(intake);
 
-        NamedCommands.registerCommand("shoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub));
+        NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub));
         NamedCommands.registerCommand("intakeOut", AutoCommands.extendAuto(intake));
         NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake, storageSub));
         NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake, storageSub));
@@ -162,16 +162,14 @@ public class RobotContainer {
         op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
-        op.a().whileTrue(new ManualShooter(shooter, storageSub, () -> manualJoystick.getRawAxis(0)));
+        op.a().whileTrue(new ManualShooter(shooter, storageSub, () -> 3400));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
             
     }
 
-    public void periodic() {
-        vision.addVisionMeasurement(drivetrain);
-    }
+    public void periodic() {   }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();

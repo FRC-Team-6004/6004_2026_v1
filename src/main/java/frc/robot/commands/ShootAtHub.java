@@ -8,13 +8,16 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import frc.robot.Robot;
 import frc.robot.Constants.PathingConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
@@ -34,8 +37,7 @@ public class ShootAtHub extends Command {
 
     private final StorageSub storage;
 
-    Optional<Alliance> alliance = DriverStation.getAlliance();
-
+    Timer t = new Timer();
 
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
@@ -43,12 +45,11 @@ public class ShootAtHub extends Command {
 
     private static final double ROT_KP = 3.5;
     private static Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
+    private static Pose2d redHubPos = FlippingUtil.flipFieldPose(hubPos);
 
 
     public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub) {
-        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-            hubPos = FlippingUtil.flipFieldPose(hubPos);
-        }
+        t.start();
         this.storage = ssub;
         this.shootTable = new ShooterLookup();
         this.swerve = drivetrain;
@@ -60,18 +61,23 @@ public class ShootAtHub extends Command {
     public void execute() {
 
         Pose2d currentPose = swerve.getState().Pose;
-    
-        Rotation2d headingToTarget = hubPos.minus(currentPose).getTranslation().getAngle();
+        Rotation2d headingToTarget = new Rotation2d();
+
+        if (Robot.isRed()) {
+            headingToTarget = redHubPos.minus(currentPose).getTranslation().getAngle();
+        } else {
+            headingToTarget = hubPos.minus(currentPose).getTranslation().getAngle();
+        }
         
         double headingError =
             headingToTarget.minus(currentPose.getRotation()).getRadians();
 
-        double omega = headingError * ROT_KP;
-        swerve.setControl(
-            drive.withVelocityX(0)
-                 .withVelocityY(0)
-                 .withRotationalRate(omega)
-        );
+        // double omega = headingError * ROT_KP;
+        // swerve.setControl(
+        //     drive.withVelocityX(0)
+        //          .withVelocityY(0)
+        //          .withRotationalRate(omega)
+        // );
 
         double distance = currentPose.getTranslation().getDistance(hubPos.getTranslation());
 
@@ -84,8 +90,11 @@ public class ShootAtHub extends Command {
         shooter.setServoAngle(ShooterSide.LEFT, servo);
         shooter.setServoAngle(ShooterSide.RIGHT, servo);
 
+
         storage.runNeo(12);
-        storage.runGround(8);
+        if (t.get() > 0.5) {
+            storage.runGround(8);
+        }
     }
 
     @Override
@@ -100,6 +109,9 @@ public class ShootAtHub extends Command {
 
         shooter.setServoAngle(ShooterSide.LEFT, .2);
         shooter.setServoAngle(ShooterSide.RIGHT, .2);
+
+        storage.runNeo(0);
+        storage.runGround(0);
     }
 
     @Override

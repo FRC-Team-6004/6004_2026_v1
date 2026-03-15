@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -33,9 +34,9 @@ public class StorageSub extends SubsystemBase {
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
-        neoConfig.smartCurrentLimit(40);
+        neoConfig.smartCurrentLimit(65);
 
-        topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        //  topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
 
     @Override
@@ -50,4 +51,6 @@ public class StorageSub extends SubsystemBase {
     public void runNeo(double speed){
         topMotor.set(speed);
     }
+
+
 }

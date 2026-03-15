@@ -45,10 +45,10 @@ public class IntakeReal implements IntakeIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         // Brake mode
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
         // Current limiting
-        config.CurrentLimits.SupplyCurrentLimit = 55;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         // Voltage limiting
