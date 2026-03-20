@@ -48,7 +48,7 @@ public class IntakeReal implements IntakeIO {
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
         // Current limiting
-        config.CurrentLimits.SupplyCurrentLimit = 40;
+        config.CurrentLimits.SupplyCurrentLimit = 30;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         // Voltage limiting

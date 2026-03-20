@@ -18,14 +18,14 @@ public class unjam extends Command {
 
     @Override
     public void execute() {
-        m_StorageSub.runNeo(-12);
-        m_StorageSub.runGround(-12);
+        m_StorageSub.runFloor(-12);
+        m_StorageSub.runTop(-12);
     }
 
     @Override
     public void end(boolean interrupted) {
-        m_StorageSub.runGround(0);
-        m_StorageSub.runNeo(0);
+        m_StorageSub.runTop(0);
+        m_StorageSub.runFloor(0);
     }
 
     @Override

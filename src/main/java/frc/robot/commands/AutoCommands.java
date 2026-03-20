@@ -31,11 +31,16 @@ public class AutoCommands {
             {
                 System.out.println("AutoShoot");
                 t.start();
+                t.reset();
                 this.storage = ssub;
                 this.shootTable = new ShooterLookup();
                 this.swerve = drivetrain;
                 this.shooter = shooterSub;
                 addRequirements(drivetrain, shooterSub, ssub);
+            }
+
+            @Override public void initialize() {
+                t.reset();
             }
 
             @Override public void execute() { 
@@ -51,14 +56,12 @@ public class AutoCommands {
                 double RPM = shootTable.getRPM(distance);
                 double servo = shootTable.getServo(distance);
 
-                shooter.setRPM(ShooterSide.LEFT, RPM);
-                shooter.setRPM(ShooterSide.RIGHT, RPM);
+                shooter.setRPM(ShooterSide.MAIN, RPM);
         
-                shooter.setServoAngle(ShooterSide.LEFT, servo);
-                shooter.setServoAngle(ShooterSide.RIGHT, servo);
+                shooter.setServoAngle(ShooterSide.MAIN, servo);
 
-                storage.runNeo(12);
-                storage.runGround(8);
+                storage.runFloor(12);
+                storage.runTop(8);
             }
 
             @Override
@@ -69,8 +72,8 @@ public class AutoCommands {
                 shooter.setServoAngle(ShooterSide.LEFT, .2);
                 shooter.setServoAngle(ShooterSide.RIGHT, .2);
 
-                storage.runNeo(0);
-                storage.runGround(0);
+                storage.runTop(0);
+                storage.runFloor(0);
             }
 
             @Override
@@ -111,7 +114,7 @@ public class AutoCommands {
             @Override
             public void execute() {
                 m_intake.runRollers(-6);
-                m_StorageSub.runGround(8);
+                m_StorageSub.runFloor(8);
             }
 
             @Override
@@ -143,7 +146,7 @@ public class AutoCommands {
             @Override
             public void execute() {
                 m_intake.runRollers(0);
-                m_StorageSub.runGround(0);
+                m_StorageSub.runFloor(0);
             }
 
             @Override

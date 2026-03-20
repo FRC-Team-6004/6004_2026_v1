@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -24,6 +25,8 @@ import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.util.ShooterLookup;
+
+import frc.robot.Constants.visionConstants;
 
 import com.pathplanner.lib.util.FlippingUtil;
 
@@ -44,9 +47,6 @@ public class ShootAtHub extends Command {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private static final double ROT_KP = 3.5;
-    private static Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
-    private static Pose2d redHubPos = FlippingUtil.flipFieldPose(hubPos);
-
 
     public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub) {
         t.start();
@@ -61,39 +61,50 @@ public class ShootAtHub extends Command {
     public void execute() {
 
         Pose2d currentPose = swerve.getState().Pose;
-        Rotation2d headingToTarget = new Rotation2d();
 
-        if (Robot.isRed()) {
-            headingToTarget = redHubPos.minus(currentPose).getTranslation().getAngle();
-        } else {
-            headingToTarget = hubPos.minus(currentPose).getTranslation().getAngle();
-        }
-        
+        double distance = 0;
+
+        Pose2d targetPose = Robot.isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
+
+        Translation2d robotTranslation = currentPose.getTranslation();
+        Translation2d targetTranslation = targetPose.getTranslation();
+
+        // Vector from robot → target
+        Translation2d toTarget = targetTranslation.minus(robotTranslation);
+
+        // Field-relative angle to target
+        Rotation2d headingToTarget = toTarget.getAngle();
+
+        // Error (robot-relative)
         double headingError =
             headingToTarget.minus(currentPose.getRotation()).getRadians();
 
-        // double omega = headingError * ROT_KP;
-        // swerve.setControl(
-        //     drive.withVelocityX(0)
-        //          .withVelocityY(0)
-        //          .withRotationalRate(omega)
-        // );
+        double omega = headingError * ROT_KP;
+        swerve.setControl(
+            drive.withVelocityX(0)
+                 .withVelocityY(0)
+                 .withRotationalRate(omega)
+        );
 
-        double distance = currentPose.getTranslation().getDistance(hubPos.getTranslation());
+
+        System.out.println("Distance: " + distance);
+        System.out.println("error " + headingError);
 
         double RPM = shootTable.getRPM(distance);
         double servo = shootTable.getServo(distance);
 
-        shooter.setRPM(ShooterSide.LEFT, RPM);
-        shooter.setRPM(ShooterSide.RIGHT, RPM);
-
-        shooter.setServoAngle(ShooterSide.LEFT, servo);
-        shooter.setServoAngle(ShooterSide.RIGHT, servo);
+        System.out.println("RPM: " + RPM);
+        System.out.println("servo: " + servo);
 
 
-        storage.runNeo(12);
+        shooter.setRPM(ShooterSide.MAIN, RPM);
+
+        shooter.setServoAngle(ShooterSide.MAIN, servo);
+
+
+        storage.runTop(8);
         if (t.get() > 0.5) {
-            storage.runGround(8);
+            storage.runFloor(12);
         }
     }
 
@@ -104,14 +115,12 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(0)
         );
-        shooter.setRPM(ShooterSide.LEFT, 0);
-        shooter.setRPM(ShooterSide.RIGHT, 0);
+        shooter.setRPM(ShooterSide.MAIN, 0);
 
-        shooter.setServoAngle(ShooterSide.LEFT, .2);
-        shooter.setServoAngle(ShooterSide.RIGHT, .2);
+        shooter.setServoAngle(ShooterSide.MAIN, .2);
 
-        storage.runNeo(0);
-        storage.runGround(0);
+        storage.runFloor(0);
+        storage.runTop(0);
     }
 
     @Override

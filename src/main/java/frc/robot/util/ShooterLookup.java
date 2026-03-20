@@ -13,11 +13,11 @@ public class ShooterLookup {
     private final InterpolatingMatrixTreeMap<Double, N2, N1> table = new InterpolatingMatrixTreeMap<Double, N2, N1>();
 
     public ShooterLookup() {
-        putInTable(63.5, 2800, 0.0);
-        putInTable(85, 3000, 0.0);
-        putInTable(120, 3250, 0.25);
-        putInTable(137, 3800, 0.25);
-        putInTable(190, 4000, 0.2);
+        putInTable(64, 2700, 0.0);
+        putInTable(103, 3100, 0.0);
+        putInTable(117, 3200, 0.0);
+        putInTable(143, 3400, 0.0);
+        putInTable(191, 3900, 0.2);
     }
 
     private void putInTable(double distanceInInches, double RPM, double Angle) {

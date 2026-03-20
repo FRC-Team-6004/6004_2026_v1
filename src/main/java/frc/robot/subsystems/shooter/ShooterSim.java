@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -14,13 +13,17 @@ public class ShooterSim implements ShooterIO {
 
     private static class ShooterSimUnit {
         double targetRPM = 0.0;
-        BangBangController bangBang = new BangBangController();
+        double oldTRPM = 0.0;
+
+        double servoPercent = 0.0;
+        double oldSP = 0.0;
 
         FlywheelSim sim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
                 DCMotor.getKrakenX60Foc(1),
                 1.0,
-                ShooterConstants.kMOI),
+                ShooterConstants.kMOI
+            ),
             DCMotor.getKrakenX60Foc(1)
         );
     }
@@ -36,8 +39,7 @@ public class ShooterSim implements ShooterIO {
         new EnumMap<>(ShooterSide.class);
 
     public ShooterSim() {
-        shooters.put(ShooterSide.LEFT, new ShooterSimUnit());
-        shooters.put(ShooterSide.RIGHT, new ShooterSimUnit());
+        shooters.put(ShooterSide.MAIN, new ShooterSimUnit());
     }
 
     @Override
@@ -48,36 +50,48 @@ public class ShooterSim implements ShooterIO {
     @Override
     public double getRPM(ShooterSide side) {
         return Units.radiansPerSecondToRotationsPerMinute(
-            shooters.get(side).sim.getAngularVelocityRadPerSec());
+            shooters.get(side).sim.getAngularVelocityRadPerSec()
+        );
+    }
+
+    @Override
+    public void setServoAngle(ShooterSide side, double percent) {
+        shooters.get(side).servoPercent = percent;
     }
 
     @Override
     public void stop(ShooterSide side) {
-        shooters.get(side).targetRPM = 0.0;
-        shooters.get(side).sim.setInputVoltage(0.0);
+        ShooterSimUnit unit = shooters.get(side);
+        unit.targetRPM = 0.0;
+        unit.sim.setInputVoltage(0.0);
     }
 
-    @Override
-    public void setServoAngle(ShooterSide side, double percent) {} //later
-
+    /** Call from Shooter subsystem periodic() */
     public void periodic() {
         for (ShooterSimUnit unit : shooters.values()) {
-            double currentRPM =
-                Units.radiansPerSecondToRotationsPerMinute(
-                    unit.sim.getAngularVelocityRadPerSec());
 
-            if (unit.targetRPM <= 0.0) {
-                unit.sim.setInputVoltage(0.0);
-            } else {
-                double bangVolts =
-                    unit.bangBang.calculate(currentRPM, unit.targetRPM) * 12.0;
+            // Mirror servo "update only on change"
+            if (unit.oldSP != unit.servoPercent) {
+                unit.oldSP = unit.servoPercent;
+                // No physical servo in sim, just store value
+            }
 
-                double ffVolts =
-                    feedforward.calculate(unit.targetRPM);
+            // Mirror real "only update motor when target changes"
+            if (unit.oldTRPM != unit.targetRPM) {
+                unit.oldTRPM = unit.targetRPM;
 
-                unit.sim.setInputVoltage(
-                    Math.max(-12.0, Math.min(12.0, bangVolts + 0.9 * ffVolts))
-                );
+                if (unit.targetRPM <= 0.0) {
+                    unit.sim.setInputVoltage(0.0);
+                } else {
+                    double targetRadPerSec =
+                        Units.rotationsPerMinuteToRadiansPerSecond(unit.targetRPM);
+
+                    double ffVolts = feedforward.calculate(targetRadPerSec);
+
+                    unit.sim.setInputVoltage(
+                        Math.max(-12.0, Math.min(12.0, ffVolts))
+                    );
+                }
             }
 
             unit.sim.update(0.02);

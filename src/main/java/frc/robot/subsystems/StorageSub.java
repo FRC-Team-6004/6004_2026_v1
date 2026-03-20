@@ -17,12 +17,12 @@ import frc.robot.Constants.StorageConstants;
 import frc.robot.util.LoggedTunableNumber;
 
 public class StorageSub extends SubsystemBase {
-    TalonFX groundMotor;
-    SparkFlex topMotor;
+    TalonFX topRoller;
+    SparkFlex floor;
 
     public StorageSub() {
-        groundMotor = new TalonFX(StorageConstants.GroundMotorID);
-        topMotor = new SparkFlex(StorageConstants.RollerMotorID, MotorType.kBrushless);
+        topRoller = new TalonFX(StorageConstants.GroundMotorID);
+        floor = new SparkFlex(StorageConstants.RollerMotorID, MotorType.kBrushless);
         
         var motorConfig = new TalonFXConfiguration();
 
@@ -30,13 +30,13 @@ public class StorageSub extends SubsystemBase {
         motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        groundMotor.getConfigurator().apply(motorConfig);
+        topRoller.getConfigurator().apply(motorConfig);
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
         neoConfig.smartCurrentLimit(65);
 
-        //  topMotor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
 
     @Override
@@ -44,12 +44,12 @@ public class StorageSub extends SubsystemBase {
 
     }
 
-    public void runGround(double speed){
-        groundMotor.set(-speed);
+    public void runTop(double speed){
+        topRoller.set(-speed);
     }
 
-    public void runNeo(double speed){
-        topMotor.set(speed);
+    public void runFloor(double speed){
+        floor.set(speed);
     }
 
 

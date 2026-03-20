@@ -1,5 +1,9 @@
 package frc.robot;
 
+import com.pathplanner.lib.util.FlippingUtil;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
 public class Constants {
@@ -139,8 +143,8 @@ public static int MAP_WIDTH = 32;
     }
 
     public static class ShooterConstants {
-      public static final int kLeftMotorID = 22;
-      public static final int kRightMotorID = 21;
+      public static final int kLeftMotorID = 21;
+      public static final int kRightMotorID = 22;
 
       public static final int kLeftServoPort = 9;
       public static final int kRightServoPort = 8;
@@ -151,16 +155,16 @@ public static int MAP_WIDTH = 32;
 
       public static final double kMOI = 12.0; // V/(RPM/s)
 
-      public static final int servoIn = 1150;
+      public static final int servoIn = 950;
       public static final int servoOut = 1500;
       public static final int servoRange = servoOut - servoIn;
 
     }
 
     public static class IntakeConstants {
-      public static final int kLeftMotorID = 23;
-      public static final int kRightMotorID = 24;
-      public static final int kRollerMotorID = 20;
+      public static final int kLeftMotorID = 24;
+      public static final int kRightMotorID = 20;
+      public static final int kRollerMotorID = 23;
 
       public static final double kGearing = 23;
 
@@ -171,5 +175,10 @@ public static int MAP_WIDTH = 32;
       public static final int RollerMotorID = 26;
 
 
+    }
+
+    public static class visionConstants {
+      public static final Pose2d hubPos = new Pose2d(Units.inchesToMeters(182.11), Units.inchesToMeters(158.84), new Rotation2d());
+      public static final Pose2d redHubPos = FlippingUtil.flipFieldPose(hubPos);    
     }
 }

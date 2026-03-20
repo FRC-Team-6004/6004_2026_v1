@@ -41,26 +41,22 @@ public class ManualShooter extends Command {
     @Override
     public void execute() {
 
-        shooter.setRPM(ShooterSide.LEFT, RPM.getAsDouble());
-        shooter.setRPM(ShooterSide.RIGHT, RPM.getAsDouble());
+        shooter.setRPM(ShooterSide.MAIN, RPM.getAsDouble());
 
-        shooter.setServoAngle(ShooterSide.LEFT, .2);
-        shooter.setServoAngle(ShooterSide.RIGHT, .2);
+        shooter.setServoAngle(ShooterSide.MAIN, .2);
 
-        storage.runNeo(12);
-        storage.runGround(8);
+        storage.runFloor(12);
+        storage.runTop(8);
     }
 
     @Override
     public void end(boolean interrupted) {
-        shooter.setRPM(ShooterSide.LEFT, 0);
-        shooter.setRPM(ShooterSide.RIGHT, 0);
+        shooter.setRPM(ShooterSide.MAIN, 0);
 
-        shooter.setServoAngle(ShooterSide.LEFT, .2);
-        shooter.setServoAngle(ShooterSide.RIGHT, .2);
+        shooter.setServoAngle(ShooterSide.MAIN, .2);
 
-        storage.runNeo(0);
-        storage.runGround(0);
+        storage.runFloor(0);
+        storage.runTop(0);
     }
 
     @Override

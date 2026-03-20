@@ -5,5 +5,6 @@ package frc.robot.subsystems.shooter;
  */
 public enum ShooterSide {
     LEFT,
-    RIGHT
+    RIGHT,
+    MAIN
 }

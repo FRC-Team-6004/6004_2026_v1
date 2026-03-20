@@ -90,28 +90,29 @@ public class Shooter extends SubsystemBase {
         
         // if (cycler == 10) {
         //     cycler = 0;
-        //     setServoAngle(ShooterSide.LEFT, servoAngle.get());
-        //     setServoAngle(ShooterSide.RIGHT, servoAngle.get());
+        //     setServoAngle(ShooterSide.MAIN, servoAngle.get());
         
-        //     double leftRPM0 = rpm.get();
-        //     double rightRPM0 = rpm.get();
-        //     setRPM(ShooterSide.LEFT, leftRPM0);
-        //     setRPM(ShooterSide.RIGHT, rightRPM0);
+        //     double mainRPM0 = rpm.get();
+        //     setRPM(ShooterSide.MAIN, mainRPM0);
         // }
 
         // cycler++;
 
         
+        double mainRPM = getRPM(ShooterSide.MAIN);
 
-        double leftRPM = getRPM(ShooterSide.LEFT);
-        double rightRPM = getRPM(ShooterSide.RIGHT);
+        // double leftRPM = getRPM(ShooterSide.LEFT);
+        // double rightRPM = getRPM(ShooterSide.RIGHT);
 
-        Logger.recordOutput("/Shooter/Left RPM", -leftRPM);
-        Logger.recordOutput("/Shooter/Right RPM", -rightRPM);
+        // Logger.recordOutput("/Shooter/Left RPM", -leftRPM);
+        // Logger.recordOutput("/Shooter/Right RPM", -rightRPM);
 
-        if (isSim) {
-            leftShooter.setLength(0.1 + leftRPM / 8000.0);
-            rightShooter.setLength(0.1 + rightRPM / 8000.0);
-        }
+        Logger.recordOutput("/Shooter/RPM", -mainRPM);
+
+
+        // if (isSim) {
+        //     leftShooter.setLength(0.1 + leftRPM / 8000.0);
+        //     rightShooter.setLength(0.1 + rightRPM / 8000.0);
+        // }
     }
 }

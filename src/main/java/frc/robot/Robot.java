@@ -82,7 +82,9 @@ public class Robot extends LoggedRobot {
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand instanceof PathPlannerAuto ppAuto) {
-            m_robotContainer.drivetrain.resetPose(ppAuto.getStartingPose());
+            if (ppAuto.getStartingPose() != null) {
+                m_robotContainer.drivetrain.resetPose(ppAuto.getStartingPose());
+            }
         }
 
         if (m_autonomousCommand != null) {
@@ -139,11 +141,12 @@ public class Robot extends LoggedRobot {
     }
 
     public static boolean isRed() {
-        var alliance = DriverStation.getAlliance();
+        // var alliance = DriverStation.getAlliance();
 
-        assert alliance.isPresent() : "Cannot determine Alliance color";
+        // assert alliance.isPresent() : "Cannot determine Alliance color";
 
-        return alliance.get() == DriverStation.Alliance.Red;
+        // return alliance.get() == DriverStation.Alliance.Red;
+        return false;
     }
 
 }

@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Constants.PathingConstants;
+import frc.robot.Constants.visionConstants;
 import frc.robot.commands.ClimberSetPos1;
 import frc.robot.commands.ClimberSetPos0;
 import frc.robot.commands.ClimberUp;
@@ -90,7 +91,7 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final Climber climber = new Climber();
+    // private final Climber climber = new Climber();
 
     private final Shooter shooter = new Shooter();
 
@@ -128,6 +129,9 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auto Mode", autoChooser);
 
+        Logger.recordOutput("/Field/Blue hub", visionConstants.hubPos);
+        Logger.recordOutput("/Field/Red hub", visionConstants.redHubPos);
+
         configureBindings();
     }
 
@@ -143,14 +147,14 @@ public class RobotContainer {
             )
         );
         
-        // joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
+        joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
 
         joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         // joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
 
-        joystick.povUp().onTrue(new ClimberUp(climber));
-        joystick.povDown().onTrue(new ClimberDown(climber));
+        // joystick.povUp().onTrue(new ClimberUp(climber));
+        // joystick.povDown().onTrue(new ClimberDown(climber));
 
         joystick.povLeft().whileTrue(new IntakeIn(intake));
         joystick.povRight().whileTrue(new IntakeOut(intake));
@@ -159,7 +163,7 @@ public class RobotContainer {
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        joystick.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
         op.a().whileTrue(new ManualShooter(shooter, storageSub, () -> 3400));
