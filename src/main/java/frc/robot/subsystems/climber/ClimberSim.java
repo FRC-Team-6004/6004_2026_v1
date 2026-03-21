@@ -8,7 +8,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -17,8 +16,6 @@ import frc.robot.Constants.ClimberConstants;
 
 
 public class ClimberSim implements ClimberIO {
-
-    private final XboxController xboxController = new XboxController(0);
 
     private final ElevatorSim elevatorSim;
     private final PIDController pid;

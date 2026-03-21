@@ -140,13 +140,4 @@ public class Robot extends LoggedRobot {
         return isReal();
     }
 
-    public static boolean isRed() {
-        // var alliance = DriverStation.getAlliance();
-
-        // assert alliance.isPresent() : "Cannot determine Alliance color";
-
-        // return alliance.get() == DriverStation.Alliance.Red;
-        return false;
-    }
-
 }

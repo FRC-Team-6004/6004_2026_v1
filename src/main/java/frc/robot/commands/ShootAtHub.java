@@ -5,21 +5,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
-import java.io.IOException;
-import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import frc.robot.Robot;
-import frc.robot.Constants.PathingConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
@@ -27,8 +19,6 @@ import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.util.ShooterLookup;
 
 import frc.robot.Constants.visionConstants;
-
-import com.pathplanner.lib.util.FlippingUtil;
 
 public class ShootAtHub extends Command {
 
@@ -62,9 +52,7 @@ public class ShootAtHub extends Command {
 
         Pose2d currentPose = swerve.getState().Pose;
 
-        double distance = 0;
-
-        Pose2d targetPose = Robot.isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
+        Pose2d targetPose = isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
 
         Translation2d robotTranslation = currentPose.getTranslation();
         Translation2d targetTranslation = targetPose.getTranslation();
@@ -86,12 +74,13 @@ public class ShootAtHub extends Command {
                  .withRotationalRate(omega)
         );
 
+        double distance = robotTranslation.getDistance(targetTranslation);
 
         System.out.println("Distance: " + distance);
         System.out.println("error " + headingError);
 
-        double RPM = shootTable.getRPM(distance);
-        double servo = shootTable.getServo(distance);
+        double RPM = Math.abs(shootTable.getRPM(Math.abs(distance)));
+        double servo = shootTable.getServo(Math.abs(distance));
 
         System.out.println("RPM: " + RPM);
         System.out.println("servo: " + servo);
@@ -101,10 +90,9 @@ public class ShootAtHub extends Command {
 
         shooter.setServoAngle(ShooterSide.MAIN, servo);
 
-
-        storage.runTop(8);
+        storage.runFloor(8);
         if (t.get() > 0.5) {
-            storage.runFloor(12);
+            storage.runTop(12);
         }
     }
 
@@ -126,5 +114,14 @@ public class ShootAtHub extends Command {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    @Override
+    public void initialize() {
+        t.reset();
+    }
+
+    private boolean isRed() {
+        return (swerve.getState().Pose.getX() > 8.25);
     }
 }

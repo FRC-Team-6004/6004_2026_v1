@@ -36,7 +36,7 @@ public class StorageSub extends SubsystemBase {
         neoConfig.idleMode(IdleMode.kBrake);
         neoConfig.smartCurrentLimit(65);
 
-        floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
 
     @Override

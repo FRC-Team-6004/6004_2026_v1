@@ -163,10 +163,10 @@ public class RobotContainer {
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        joystick.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
-        op.a().whileTrue(new ManualShooter(shooter, storageSub, () -> 3400));
+        op.a().whileTrue(new ManualShooter(shooter, storageSub));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 

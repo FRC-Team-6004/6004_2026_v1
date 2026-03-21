@@ -2,46 +2,42 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
-import frc.robot.Constants.PathingConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
-import frc.robot.util.ShooterLookup;
 
 public class fieldShot extends Command {
 
     private final Shooter shooter;
     private final StorageSub storage;
 
-
-    private final SwerveRequest.FieldCentric drive =
-        new SwerveRequest.FieldCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    Timer t = new Timer();
 
     public fieldShot(Shooter shooterSub, StorageSub ssub) {
+        t.start();
         this.storage = ssub;
         this.shooter = shooterSub;
         addRequirements(shooterSub, ssub);
     }
 
     @Override
+    public void initialize() {
+        t.reset();
+    }
+
+    @Override
     public void execute() {
 
-        shooter.setRPM(ShooterSide.MAIN, 4700);
+        shooter.setRPM(ShooterSide.MAIN, 4500);
 
         shooter.setServoAngle(ShooterSide.MAIN, 1);
 
-        storage.runFloor(12);
-        storage.runTop(8);
+        storage.runFloor(8);
+        if (t.get() > 0.5) {
+            storage.runTop(12);
+        }
     }
 
     @Override
