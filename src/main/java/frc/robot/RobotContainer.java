@@ -43,6 +43,7 @@ import frc.robot.commands.ManualShooter;
 import frc.robot.commands.ShootAtHub;
 import frc.robot.commands.ShooterLeftRun;
 import frc.robot.commands.ShooterRightRun;
+import frc.robot.commands.closeShoot;
 import frc.robot.commands.fieldShot;
 import frc.robot.commands.intakeCommand;
 import frc.robot.commands.unjam;
@@ -163,7 +164,8 @@ public class RobotContainer {
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        // op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        op.rightTrigger(0.05).whileTrue(new closeShoot(shooter, storageSub));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
         op.a().whileTrue(new ManualShooter(shooter, storageSub));

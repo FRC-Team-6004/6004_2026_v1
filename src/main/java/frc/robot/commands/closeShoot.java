@@ -8,14 +8,14 @@ import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 
-public class ManualShooter extends Command {
+public class closeShoot extends Command {
 
     private final Shooter shooter;
     private final StorageSub storage;
 
     Timer t = new Timer();
 
-    public ManualShooter(Shooter shooterSub, StorageSub ssub) {
+    public closeShoot(Shooter shooterSub, StorageSub ssub) {
         t.start();
         this.storage = ssub;
         this.shooter = shooterSub;
@@ -30,7 +30,7 @@ public class ManualShooter extends Command {
     @Override
     public void execute() {
 
-        shooter.setRPM(ShooterSide.MAIN, 3200);
+        shooter.setRPM(ShooterSide.MAIN, 3000);
 
         shooter.setServoAngle(ShooterSide.MAIN, 0);
 

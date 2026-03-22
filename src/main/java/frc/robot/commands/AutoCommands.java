@@ -86,7 +86,7 @@ public class AutoCommands {
             @Override public void initialize() { t.reset(); }
             @Override public void execute() { m_intake.runArm(-1); }
             @Override public void end(boolean i) { m_intake.runArm(0); }
-            @Override public boolean isFinished() { return t.hasElapsed(1.5); }
+            @Override public boolean isFinished() { return t.hasElapsed(1.7); }
         };
     }
     
@@ -108,7 +108,7 @@ public class AutoCommands {
 
             @Override
             public void execute() {
-                m_intake.runRollers(-6);
+                m_intake.runRollers(-10);
                 m_StorageSub.runFloor(8);
             }
 

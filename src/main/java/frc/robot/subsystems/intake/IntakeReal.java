@@ -43,13 +43,21 @@ public class IntakeReal implements IntakeIO {
         rollerMotor   = new TalonFX(IntakeConstants.kRollerMotorID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
+        TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+
 
         // Brake mode
         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+        rollerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+
         // Current limiting
         config.CurrentLimits.SupplyCurrentLimit = 30;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+        rollerConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         // Voltage limiting
         config.Voltage
@@ -65,13 +73,14 @@ public class IntakeReal implements IntakeIO {
 
         applyConfigWithRetry(pivotLeader, config);
         applyConfigWithRetry(pivotFollower, config);
+        applyConfigWithRetry(rollerMotor, rollerConfig);
         
-        pivotFollower.setControl(
-            new Follower(
-                pivotLeader.getDeviceID(),
-                MotorAlignmentValue.Opposed   // invert follower
-            )
-        );
+        // pivotFollower.setControl(
+        //     new Follower(
+        //         pivotLeader.getDeviceID(),
+        //         MotorAlignmentValue.Opposed   // invert follower
+        //     )
+        // );
          
 
         pivotLeader.setPosition(0.0);
@@ -90,6 +99,8 @@ public class IntakeReal implements IntakeIO {
 
     private void moveArm(double speed) {
         pivotLeader.set(speed *.1);
+        pivotFollower.set(speed * -.1);
+
     }
 
 
