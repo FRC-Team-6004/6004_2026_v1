@@ -9,6 +9,7 @@ public interface ShooterIO {
     /** Set target speed for one shooter (RPM) */
     void setTargetRPM(ShooterSide side, double rpm);
 
+
     /** Get current speed for one shooter (RPM) */
     double getRPM(ShooterSide side);
 

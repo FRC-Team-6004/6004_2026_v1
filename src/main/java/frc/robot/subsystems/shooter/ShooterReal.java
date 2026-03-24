@@ -96,7 +96,7 @@ public class ShooterReal implements ShooterIO {
 
             if (unit.oldTRPM != unit.targetRPM) {
                 unit.oldTRPM = unit.targetRPM;
-                if (unit.targetRPM <= 0.0) {
+                if (unit.targetRPM == 0.0) {
                     unit.motor.stopMotor();
                     continue;
                 } 

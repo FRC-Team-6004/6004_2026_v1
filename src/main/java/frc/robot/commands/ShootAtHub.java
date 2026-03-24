@@ -16,6 +16,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
+import frc.robot.subsystems.VisionSub;
+
 import frc.robot.util.ShooterLookup;
 
 import frc.robot.Constants.visionConstants;
@@ -30,6 +32,8 @@ public class ShootAtHub extends Command {
 
     private final StorageSub storage;
 
+    private final VisionSub vision;
+
     Timer t = new Timer();
 
     private final SwerveRequest.FieldCentric drive =
@@ -38,9 +42,10 @@ public class ShootAtHub extends Command {
 
     private static final double ROT_KP = 3.5;
 
-    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub) {
+    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub, VisionSub vsub) {
         t.start();
         this.storage = ssub;
+        this.vision = vsub;
         this.shootTable = new ShooterLookup();
         this.swerve = drivetrain;
         this.shooter = shooterSub;
@@ -49,6 +54,9 @@ public class ShootAtHub extends Command {
 
     @Override
     public void execute() {
+
+        vision.addVisionMeasurement(swerve);
+
 
         Pose2d currentPose = swerve.getState().Pose;
 

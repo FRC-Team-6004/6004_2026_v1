@@ -47,6 +47,7 @@ import frc.robot.commands.closeShoot;
 import frc.robot.commands.fieldShot;
 import frc.robot.commands.intakeCommand;
 import frc.robot.commands.unjam;
+import frc.robot.commands.shooterUnjam;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
@@ -162,12 +163,14 @@ public class RobotContainer {
 
 
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
+        op.leftBumper().whileTrue(new shooterUnjam(shooter));
+
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        // op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
-        op.rightTrigger(0.05).whileTrue(new closeShoot(shooter, storageSub));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
+        op.b().whileTrue(new closeShoot(shooter, storageSub));
         op.a().whileTrue(new ManualShooter(shooter, storageSub));
 
         drivetrain.registerTelemetry(logger::telemeterize);
