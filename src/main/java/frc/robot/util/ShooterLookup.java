@@ -14,9 +14,10 @@ public class ShooterLookup {
     public ShooterLookup() {
         putInTable(64, 2700, 0.0);
         putInTable(103, 3100, 0.0);
-        putInTable(117, 3200, 0.0);
+        putInTable(117, 3275, 0.0);
+        putInTable(140, 3385, 0.0);
         putInTable(143, 3400, 0.0);
-        putInTable(191, 3900, 0.2);
+        putInTable(191, 3800, 0.0);
     }
 
     private void putInTable(double distanceInInches, double RPM, double Angle) {

@@ -163,11 +163,11 @@ public class RobotContainer {
 
 
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
-        op.leftBumper().whileTrue(new shooterUnjam(shooter));
 
+        op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision));
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
 
         op.b().whileTrue(new closeShoot(shooter, storageSub));
@@ -178,7 +178,9 @@ public class RobotContainer {
             
     }
 
-    public void periodic() {   }
+    public void periodic() {   
+        vision.addVisionMeasurement(drivetrain);
+    }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();

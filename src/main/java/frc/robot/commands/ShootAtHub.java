@@ -22,6 +22,8 @@ import frc.robot.util.ShooterLookup;
 
 import frc.robot.Constants.visionConstants;
 
+import org.littletonrobotics.junction.Logger;
+
 public class ShootAtHub extends Command {
 
     private final CommandSwerveDrivetrain swerve;
@@ -40,7 +42,7 @@ public class ShootAtHub extends Command {
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    private static final double ROT_KP = 3.5;
+    private static final double ROT_KP = 2.5;
 
     public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub, VisionSub vsub) {
         t.start();
@@ -84,15 +86,11 @@ public class ShootAtHub extends Command {
 
         double distance = robotTranslation.getDistance(targetTranslation);
 
-        System.out.println("Distance: " + distance);
-        System.out.println("error " + headingError);
 
         double RPM = Math.abs(shootTable.getRPM(Math.abs(distance)));
         double servo = shootTable.getServo(Math.abs(distance));
 
-        System.out.println("RPM: " + RPM);
-        System.out.println("servo: " + servo);
-
+        System.out.println(distance);
 
         shooter.setRPM(ShooterSide.MAIN, RPM);
 
