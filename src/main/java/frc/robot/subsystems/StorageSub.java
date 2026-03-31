@@ -27,14 +27,14 @@ public class StorageSub extends SubsystemBase {
         var motorConfig = new TalonFXConfiguration();
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.CurrentLimits.SupplyCurrentLimit = 55;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 15;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         topRoller.getConfigurator().apply(motorConfig);
 
         var neoConfig = new SparkFlexConfig();
         neoConfig.idleMode(IdleMode.kBrake);
-        neoConfig.smartCurrentLimit(65);
+        neoConfig.smartCurrentLimit(15);
 
         // floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 

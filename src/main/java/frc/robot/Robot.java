@@ -107,6 +107,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopPeriodic() {
+        m_robotContainer.vision.addVisionMeasurement(m_robotContainer.drivetrain);
     }
 
     @Override

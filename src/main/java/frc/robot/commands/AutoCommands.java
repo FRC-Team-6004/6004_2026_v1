@@ -53,9 +53,9 @@ public class AutoCommands {
                 shooter.setServoAngle(ShooterSide.MAIN, servo);
 
 
-                storage.runFloor(8);
-                if (t.get() > 0.5) {
-                    storage.runTop(12);
+                if (t.get() > 1) {
+                    storage.runFloor(4);
+                    storage.runTop(4);
                 }
             }
 
@@ -84,9 +84,9 @@ public class AutoCommands {
             Timer t = new Timer();
             { t.start(); this.m_intake = intake;}
             @Override public void initialize() { t.reset(); }
-            @Override public void execute() { m_intake.runArm(-1); }
+            @Override public void execute() { m_intake.runArm(-2); }
             @Override public void end(boolean i) { m_intake.runArm(0); }
-            @Override public boolean isFinished() { return t.hasElapsed(1.7); }
+            @Override public boolean isFinished() { return t.hasElapsed(1); }
         };
     }
     
@@ -109,7 +109,7 @@ public class AutoCommands {
             @Override
             public void execute() {
                 m_intake.runRollers(-10);
-                m_StorageSub.runFloor(8);
+                m_StorageSub.runFloor(0);
             }
 
             @Override
