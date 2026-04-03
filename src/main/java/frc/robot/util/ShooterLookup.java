@@ -15,8 +15,9 @@ public class ShooterLookup {
         putInTable(64, 2700, 0.0);
         putInTable(103, 3100, 0.0);
         putInTable(117, 3200, 0.0);
-        putInTable(143, 3400, 0.0);
-        putInTable(191, 3900, 0.2);
+        putInTable(140, 3425, 0.0);
+        putInTable(172, 3600, 0.0);
+        putInTable(185, 3900, 0.0);
     }
 
     private void putInTable(double distanceInInches, double RPM, double Angle) {
@@ -27,14 +28,10 @@ public class ShooterLookup {
     }
 
     public double getServo(double distance) {
-        System.out.println("Servo");
-        System.out.println(table.get(distance).get(1, 0));
         return table.get(distance).get(1, 0);
     }
 
     public double getRPM(double distance) {
-        System.out.println("getRPM");
-        System.out.println(table.get(distance).get(0, 0));
         return table.get(distance).get(0, 0);
     }
 }

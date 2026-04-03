@@ -34,7 +34,7 @@ public class VisionSub extends SubsystemBase {
     /* Robot -> camera transforms */
     private final Transform3d robotToHubFwd = new Transform3d(
             new Translation3d(0.0, 0.0, Units.inchesToMeters(21)),
-            new Rotation3d(0, 30, 0));
+            new Rotation3d(Math.toRadians(0), Math.toRadians(29.4), Math.toRadians(0)));
 
     private final Transform3d robotToHubLeft = new Transform3d(
             new Translation3d(0.0, 0.28, 0.42),

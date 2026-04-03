@@ -17,10 +17,12 @@ import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.VisionSub;
-
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShooterLookup;
 
 import frc.robot.Constants.visionConstants;
+
+import org.littletonrobotics.junction.Logger;
 
 public class ShootAtHub extends Command {
 
@@ -34,21 +36,24 @@ public class ShootAtHub extends Command {
 
     private final VisionSub vision;
 
+    private final Intake m_Intake;
+
     Timer t = new Timer();
 
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    private static final double ROT_KP = 3.5;
+    private static final double ROT_KP = 2.5;
 
-    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub, VisionSub vsub) {
+    public ShootAtHub(CommandSwerveDrivetrain drivetrain, Shooter shooterSub, StorageSub ssub, VisionSub vsub, Intake intake) {
         t.start();
         this.storage = ssub;
         this.vision = vsub;
         this.shootTable = new ShooterLookup();
         this.swerve = drivetrain;
         this.shooter = shooterSub;
+        this.m_Intake = intake;
         addRequirements(drivetrain, shooterSub, ssub);
     }
 
@@ -84,23 +89,25 @@ public class ShootAtHub extends Command {
 
         double distance = robotTranslation.getDistance(targetTranslation);
 
-        System.out.println("Distance: " + distance);
-        System.out.println("error " + headingError);
 
         double RPM = Math.abs(shootTable.getRPM(Math.abs(distance)));
         double servo = shootTable.getServo(Math.abs(distance));
 
-        System.out.println("RPM: " + RPM);
-        System.out.println("servo: " + servo);
-
+        System.out.println(distance);
 
         shooter.setRPM(ShooterSide.MAIN, RPM);
 
         shooter.setServoAngle(ShooterSide.MAIN, servo);
 
-        storage.runFloor(8);
-        if (t.get() > 0.5) {
-            storage.runTop(12);
+        if (t.get() > 1) {
+            storage.runFloor(4);
+            storage.runTop(4);
+        }
+        
+        if (t.get() > 2 && t.get() < 2.6) {
+            m_Intake.runArm(2);
+        } else {
+            m_Intake.runArm(0);
         }
     }
 
@@ -112,11 +119,10 @@ public class ShootAtHub extends Command {
                  .withRotationalRate(0)
         );
         shooter.setRPM(ShooterSide.MAIN, 0);
-
-        shooter.setServoAngle(ShooterSide.MAIN, .2);
-
+        shooter.setServoAngle(ShooterSide.MAIN, 0);
         storage.runFloor(0);
         storage.runTop(0);
+
     }
 
     @Override

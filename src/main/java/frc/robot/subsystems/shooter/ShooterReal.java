@@ -2,7 +2,10 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 
@@ -89,7 +92,7 @@ public class ShooterReal implements ShooterIO {
 
             if (unit.oldSP != unit.servoPercent) {
                 int servo = (int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
-                servo = Math.max(Math.min(servo, 4000), 1);
+                servo = Math.max(Math.min(servo, 4000), ShooterConstants.servoIn);
                 unit.hood.setPulseTimeMicroseconds(servo);
                 unit.hood2.setPulseTimeMicroseconds(servo);
             }

@@ -20,8 +20,8 @@ public class intakeCommand extends Command {
 
     @Override
     public void execute() {
-        m_intake.runRollers(-6);
-        m_StorageSub.runFloor(8);
+        m_intake.runRollers(-8);
+        m_StorageSub.runFloor(0);
     }
 
     @Override

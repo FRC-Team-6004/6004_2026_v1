@@ -34,9 +34,9 @@ public class fieldShot extends Command {
 
         shooter.setServoAngle(ShooterSide.MAIN, 1);
 
-        storage.runFloor(8);
-        if (t.get() > 0.5) {
-            storage.runTop(12);
+        if (t.get() > 1) {
+            storage.runFloor(4);
+            storage.runTop(4);
         }
     }
 
@@ -44,7 +44,7 @@ public class fieldShot extends Command {
     public void end(boolean interrupted) {
         shooter.setRPM(ShooterSide.MAIN, 0);
 
-        shooter.setServoAngle(ShooterSide.MAIN, .2);
+        shooter.setServoAngle(ShooterSide.MAIN, 0);
 
         storage.runFloor(0);
         storage.runTop(0);

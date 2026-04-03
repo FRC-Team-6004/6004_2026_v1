@@ -38,13 +38,11 @@ import frc.robot.commands.CustomPathing;
 import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
-import frc.robot.commands.IntakeRollers;
 import frc.robot.commands.ManualShooter;
 import frc.robot.commands.ShootAtHub;
-import frc.robot.commands.ShooterLeftRun;
-import frc.robot.commands.ShooterRightRun;
 import frc.robot.commands.closeShoot;
 import frc.robot.commands.fieldShot;
+import frc.robot.commands.fullFieldShot;
 import frc.robot.commands.intakeCommand;
 import frc.robot.commands.unjam;
 import frc.robot.commands.shooterUnjam;
@@ -66,7 +64,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import frc.robot.util.NamedCommandManager;
 
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 
 
@@ -113,6 +110,9 @@ public class RobotContainer {
         PathingConstants.MAP_LENGTH,
         PathingConstants.MAP_WIDTH);
 
+    double speedDecay = .8;
+    double maxN = speedDecay / (1 - speedDecay);
+
     public RobotContainer() {
 
         CommandScheduler.getInstance().registerSubsystem(drivetrain);
@@ -143,11 +143,12 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-xs * (1 / maxN) * 1 * MaxSpeed)
+                    .withVelocityY(-ys * (1 / maxN) * 1 * MaxSpeed)
+                    .withRotationalRate(-rs * .8 * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+
         
         joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
 
@@ -163,12 +164,18 @@ public class RobotContainer {
 
 
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
-        op.leftBumper().whileTrue(new shooterUnjam(shooter));
 
+        op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
+<<<<<<< HEAD
         op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision));
+=======
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision, intake));
+>>>>>>> 633067b6333529056d8d2d887894a77653ff73a7
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
+        op.povUp().whileTrue(new fullFieldShot(shooter, storageSub));
+
 
         op.b().whileTrue(new closeShoot(shooter, storageSub));
         op.a().whileTrue(new ManualShooter(shooter, storageSub));
@@ -178,7 +185,33 @@ public class RobotContainer {
             
     }
 
-    public void periodic() {   }
+    double xs = 0;
+    double ys = 0;
+    double rs = 0;
+
+    public void periodic() {   
+        int mode = 1;
+
+        //mode 1: trapezoid profile
+        //mode default: reg
+
+        switch(mode) {
+            case 1 : 
+                xs += joystick.getLeftY();
+                ys += joystick.getLeftX();
+                xs *= speedDecay;
+                ys *= speedDecay;
+                rs = joystick.getRightX();
+                break;
+            default : 
+                xs = joystick.getLeftY() * maxN;
+                ys = joystick.getLeftX() * maxN;
+                rs = joystick.getRightX();
+                break;
+        }
+
+        // vision.addVisionMeasurement(drivetrain);
+    }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
