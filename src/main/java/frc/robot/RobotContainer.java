@@ -168,11 +168,7 @@ public class RobotContainer {
         op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-<<<<<<< HEAD
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision));
-=======
         op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision, intake));
->>>>>>> 633067b6333529056d8d2d887894a77653ff73a7
         op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
         op.povUp().whileTrue(new fullFieldShot(shooter, storageSub));
 

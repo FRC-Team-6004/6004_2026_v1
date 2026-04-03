@@ -108,13 +108,8 @@ public class AutoCommands {
 
             @Override
             public void execute() {
-<<<<<<< HEAD
-                m_intake.runRollers(-20);
-                m_StorageSub.runFloor(8);
-=======
                 m_intake.runRollers(-10);
                 m_StorageSub.runFloor(0);
->>>>>>> 633067b6333529056d8d2d887894a77653ff73a7
             }
 
             @Override
