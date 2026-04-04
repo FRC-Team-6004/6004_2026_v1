@@ -1,18 +1,11 @@
 package frc.robot.subsystems.shooter;
 
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 
-import edu.wpi.first.math.controller.BangBangController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants.ShooterConstants;
 
 
@@ -52,16 +45,6 @@ public class ShooterReal implements ShooterIO {
             ShooterSide.MAIN,
             new ShooterUnit(ShooterConstants.kLeftMotorID, ShooterConstants.kRightMotorID, ShooterConstants.kLeftServoPort, ShooterConstants.kRightServoPort)
         );
-
-        // shooters.put(
-        //     ShooterSide.LEFT,
-        //     new ShooterUnit(ShooterConstants.kLeftMotorID, ShooterConstants.kLeftServoPort)
-        // );
-
-        // shooters.put(
-        //     ShooterSide.RIGHT,
-        //     new ShooterUnit(ShooterConstants.kRightMotorID, ShooterConstants.kRightServoPort)
-        // );
     }
 
     @Override
@@ -83,16 +66,15 @@ public class ShooterReal implements ShooterIO {
     public void stop(ShooterSide side) {
         ShooterUnit unit = shooters.get(side);
         unit.targetRPM = 0.0;
-        //unit.motor.stopMotor();
     }
 
-    /** Call from Shooter subsystem periodic() */
     public void periodic() {
         for (ShooterUnit unit : shooters.values()) {
 
             if (unit.oldSP != unit.servoPercent) {
+                unit.oldSP = unit.servoPercent;
                 int servo = (int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
-                servo = Math.max(Math.min(servo, 4000), ShooterConstants.servoIn);
+                servo = Math.max(Math.min(servo, ShooterConstants.servoOut), ShooterConstants.servoIn);
                 unit.hood.setPulseTimeMicroseconds(servo);
                 unit.hood2.setPulseTimeMicroseconds(servo);
             }

@@ -19,35 +19,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-
-
 public class VisionSub extends SubsystemBase {
 
     private AprilTagFieldLayout fieldLayout;
 
     /* Cameras */
     private final PhotonCamera hubFwdCam = new PhotonCamera("hubFwdCam");
-    private final PhotonCamera hubLeftCam = new PhotonCamera("hubLeftCam");
-    // private final PhotonCamera climbCam = new PhotonCamera("climbCam");
 
     /* Robot -> camera transforms */
     private final Transform3d robotToHubFwd = new Transform3d(
-            new Translation3d(0.0, 0.0, Units.inchesToMeters(21)),
-            new Rotation3d(Math.toRadians(0), Math.toRadians(29.4), Math.toRadians(0)));
-
-    private final Transform3d robotToHubLeft = new Transform3d(
-            new Translation3d(0.0, 0.28, 0.42),
-            new Rotation3d(15, 0, Math.toRadians(90)));
-
-    // private final Transform3d robotToClimb = new Transform3d(
-    //         new Translation3d(0.0, -0.28, 0.42),
-    //         new Rotation3d(0, 0, Math.toRadians(-90)));
+            new Translation3d(0.0, 0.0, Units.inchesToMeters(19)),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(20.5), Math.toRadians(0)));
 
     /* Pose estimators */
     private PhotonPoseEstimator hubFwdEstimator;
-    private PhotonPoseEstimator hubLeftEstimator;
-    // private PhotonPoseEstimator climbEstimator;
+
 
     public VisionSub() {
 
@@ -60,9 +46,6 @@ public class VisionSub extends SubsystemBase {
 
         hubFwdEstimator = new PhotonPoseEstimator(fieldLayout, robotToHubFwd);
 
-        // hubLeftEstimator = new PhotonPoseEstimator(fieldLayout, robotToHubLeft);
-
-        // climbEstimator = new PhotonPoseEstimator(fieldLayout, robotToClimb);
     }
 
     /* -------- Internal estimation -------- */
@@ -85,8 +68,6 @@ public class VisionSub extends SubsystemBase {
         List<EstimatedRobotPose> poses = new ArrayList<>();
 
         getEstimate(hubFwdCam, hubFwdEstimator).ifPresent(poses::add);
-        // getEstimate(hubLeftCam, hubLeftEstimator).ifPresent(poses::add);
-        // getEstimate(climbCam, climbEstimator).ifPresent(poses::add);
 
         return poses;
     }

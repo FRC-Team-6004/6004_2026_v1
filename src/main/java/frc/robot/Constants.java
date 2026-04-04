@@ -156,7 +156,7 @@ public static int MAP_WIDTH = 32;
       public static final double kMOI = 12.0; // V/(RPM/s)
 
       public static final int servoIn = 950;
-      public static final int servoOut = 1500;
+      public static final int servoOut = 1400;
       public static final int servoRange = servoOut - servoIn;
 
     }
@@ -165,6 +165,11 @@ public static int MAP_WIDTH = 32;
       public static final int kLeftMotorID = 24;
       public static final int kRightMotorID = 20;
       public static final int kRollerMotorID = 23;
+      public static final int kRollerMotor2ID = 27;
+
+      public static final double PIDout = -5.85;
+      public static final double PIDin = 0.0;
+
 
       public static final double kGearing = 23;
 

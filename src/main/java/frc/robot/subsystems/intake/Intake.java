@@ -60,6 +60,10 @@ public class Intake extends SubsystemBase {
         io.setArmPosition(Units.degreesToRadians(angleDeg));
     }
 
+    public void setArmControl(double control) {
+        io.setArmPosition(control);
+    }
+
     /* -------------------- State -------------------- */
 
     public double getAngleRad() {

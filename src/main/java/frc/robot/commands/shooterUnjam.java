@@ -2,9 +2,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-import edu.wpi.first.wpilibj.Timer;
-
-import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterSide;
 

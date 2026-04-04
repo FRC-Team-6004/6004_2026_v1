@@ -19,6 +19,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -27,22 +28,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.PathingConstants;
 import frc.robot.Constants.visionConstants;
-import frc.robot.commands.ClimberSetPos1;
-import frc.robot.commands.ClimberSetPos0;
-import frc.robot.commands.ClimberUp;
 import frc.robot.commands.AutoCommands;
-import frc.robot.commands.ClimberDown;
 import frc.robot.commands.CustomPathing;
-import frc.robot.commands.DoubleShooterLR;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
-import frc.robot.commands.ManualShooter;
 import frc.robot.commands.ShootAtHub;
-import frc.robot.commands.closeShoot;
-import frc.robot.commands.fieldShot;
-import frc.robot.commands.fullFieldShot;
 import frc.robot.commands.intakeCommand;
 import frc.robot.commands.unjam;
 import frc.robot.commands.shooterUnjam;
@@ -64,10 +57,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import frc.robot.util.NamedCommandManager;
 
-
-
-
-
+import frc.robot.commands.ShootCommands;
 
 public class RobotContainer {
     private double MaxSpeed = .70 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -120,7 +110,7 @@ public class RobotContainer {
         CommandScheduler.getInstance().registerSubsystem(storageSub);
         CommandScheduler.getInstance().registerSubsystem(intake);
 
-        NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub));
+        NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub, intake));
         NamedCommands.registerCommand("intakeOut", AutoCommands.extendAuto(intake));
         NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake, storageSub));
         NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake, storageSub));
@@ -156,11 +146,12 @@ public class RobotContainer {
 
         // joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
 
-        // joystick.povUp().onTrue(new ClimberUp(climber));
-        // joystick.povDown().onTrue(new ClimberDown(climber));
 
         joystick.povLeft().whileTrue(new IntakeIn(intake));
         joystick.povRight().whileTrue(new IntakeOut(intake));
+
+        joystick.povUp().onTrue(Commands.runOnce(() -> intake.setArmControl(IntakeConstants.PIDin)));
+        joystick.povDown().onTrue(Commands.runOnce(() -> intake.setArmControl(IntakeConstants.PIDout)));
 
 
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
@@ -168,49 +159,59 @@ public class RobotContainer {
         op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, vision, intake));
-        op.leftTrigger(0.05).whileTrue(new fieldShot(shooter, storageSub));
-        op.povUp().whileTrue(new fullFieldShot(shooter, storageSub));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, intake));
+        op.leftTrigger(0.05).whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 4500, 0.5));
 
-
-        op.b().whileTrue(new closeShoot(shooter, storageSub));
-        op.a().whileTrue(new ManualShooter(shooter, storageSub));
+        op.b().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3000, 0.0));
+        op.a().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3500, 0.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
-            
     }
 
     double xs = 0;
     double ys = 0;
     double rs = 0;
 
-    public void periodic() {   
+    public void periodic() { 
+
+        Pose2d currentPose = drivetrain.getState().Pose;
+        Pose2d targetPose = isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
+        Translation2d robotTranslation = currentPose.getTranslation();
+        Translation2d targetTranslation = targetPose.getTranslation();
+        // Vector from robot → target
+        Translation2d toTarget = targetTranslation.minus(robotTranslation);
+        double distance = robotTranslation.getDistance(targetTranslation);
+        Shooter.distance = distance;
+
         int mode = 1;
 
-        //mode 1: trapezoid profile
+        //mode 1: slippery profile
         //mode default: reg
 
         switch(mode) {
             case 1 : 
-                xs += joystick.getLeftY();
-                ys += joystick.getLeftX();
+                xs += Math.pow(joystick.getLeftY(), 2);
+                ys += Math.pow(joystick.getLeftX(), 2);
                 xs *= speedDecay;
                 ys *= speedDecay;
-                rs = joystick.getRightX();
+                rs = Math.pow(joystick.getRightX(), 2);
                 break;
             default : 
-                xs = joystick.getLeftY() * maxN;
-                ys = joystick.getLeftX() * maxN;
-                rs = joystick.getRightX();
+                xs = Math.pow(joystick.getLeftY(), 2) * maxN;
+                ys = Math.pow(joystick.getLeftX(), 2) * maxN;
+                rs = Math.pow(joystick.getRightX(), 2);
                 break;
         }
-
-        // vision.addVisionMeasurement(drivetrain);
     }
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
         // return null;
     }
+
+    private boolean isRed() {
+        return (drivetrain.getState().Pose.getX() > 8.25);
+    }
+
 }

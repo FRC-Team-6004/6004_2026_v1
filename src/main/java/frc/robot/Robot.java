@@ -93,7 +93,9 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        m_robotContainer.vision.addVisionMeasurement(m_robotContainer.drivetrain);
+    }
 
     @Override
     public void autonomousExit() {}

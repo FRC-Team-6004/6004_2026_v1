@@ -2,6 +2,8 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.wpilibj.Timer;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -18,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+
 /**
  * Intake pivot subsystem with two mechanically mirrored arm motors.
  * One leader, one inverted follower, both using CTRE position control
@@ -29,6 +33,8 @@ public class IntakeReal implements IntakeIO {
     private final TalonFX pivotLeader;
     private final TalonFX pivotFollower;
     private final TalonFX rollerMotor;
+    private final TalonFX rollerMotorOpposed;
+
 
     /* ---------------- Controls ---------------- */
     private final NeutralOut m_brake = new NeutralOut();
@@ -37,13 +43,27 @@ public class IntakeReal implements IntakeIO {
 
     private double targetPos = 0.0;
 
+    private Timer t = new Timer();
+
+    private final MotionMagicExpoVoltage m_motionMagic = new MotionMagicExpoVoltage(0).withSlot(0);
+
+
     public IntakeReal() {
         pivotLeader   = new TalonFX(IntakeConstants.kLeftMotorID);
         pivotFollower = new TalonFX(IntakeConstants.kRightMotorID);
         rollerMotor   = new TalonFX(IntakeConstants.kRollerMotorID);
+        rollerMotorOpposed   = new TalonFX(IntakeConstants.kRollerMotor2ID);
+
+        t.start();
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+
+        config.MotionMagic.MotionMagicCruiseVelocity = 80;   // rotations/sec (tune)
+        config.MotionMagic.MotionMagicAcceleration = 160;    // rotations/sec^2 (tune)
+        config.MotionMagic.MotionMagicJerk = 1000;           // controls “curve” aggressiveness
+        config.MotionMagic.MotionMagicExpo_kV = 0.12;   // velocity feedforward (start small)
+        config.MotionMagic.MotionMagicExpo_kA = 0.01;   // accel feedforward
 
 
         // Brake mode
@@ -56,8 +76,15 @@ public class IntakeReal implements IntakeIO {
         config.CurrentLimits.SupplyCurrentLimit = 30;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        rollerConfig.CurrentLimits.SupplyCurrentLimit = 30;
+        config.CurrentLimits.StatorCurrentLimit = 120;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
+
+        rollerConfig.CurrentLimits.SupplyCurrentLimit = 10;
         rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+        rollerConfig.CurrentLimits.StatorCurrentLimit = 45;
+        rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
 
         // Voltage limiting
         config.Voltage
@@ -65,31 +92,40 @@ public class IntakeReal implements IntakeIO {
             .withPeakReverseVoltage(Volts.of(-12));
 
         // Slot 0 PID + gravity compensation
-        config.Slot0.kP = 3.0;
+        config.Slot0.kP = 4;
         config.Slot0.kI = 0.0;
         config.Slot0.kD = 0.1;
-        config.Slot0.kG = 1.0;
+        config.Slot0.kG = .12;
         config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
 
         applyConfigWithRetry(pivotLeader, config);
         applyConfigWithRetry(pivotFollower, config);
         applyConfigWithRetry(rollerMotor, rollerConfig);
+        applyConfigWithRetry(rollerMotorOpposed, rollerConfig);
+
+        rollerMotorOpposed.setControl(new Follower(rollerMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+
         
-        // pivotFollower.setControl(
-        //     new Follower(
-        //         pivotLeader.getDeviceID(),
-        //         MotorAlignmentValue.Opposed   // invert follower
-        //     )
-        // );
+        pivotFollower.setControl(
+            new Follower(
+                pivotLeader.getDeviceID(),
+                MotorAlignmentValue.Opposed   // invert follower
+            )
+        );
          
 
         pivotLeader.setPosition(0.0);
     }
 
     private void setArmControl(double pos) {
+        // pivotLeader.setControl(
+        //     m_positionVoltage.withPosition(pos)
+        // );
+
         pivotLeader.setControl(
-            m_positionVoltage.withPosition(pos)
+            m_motionMagic.withPosition(pos)
         );
+
     }
 
     @Override
@@ -99,14 +135,12 @@ public class IntakeReal implements IntakeIO {
 
     private void moveArm(double speed) {
         pivotLeader.set(speed *.1);
-        pivotFollower.set(speed * -.1);
-
     }
-
 
     @Override
     public void periodic() {
-        //setArmControl(targetPos);
+        double actualPos = targetPos + Math.cos(t.get() * 12.5) * 0.5;
+        setArmControl(Math.min(actualPos, 0));
     }
 
     private static void applyConfigWithRetry(TalonFX motor, TalonFXConfiguration config) {

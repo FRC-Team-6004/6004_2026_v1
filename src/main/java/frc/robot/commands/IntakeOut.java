@@ -16,7 +16,7 @@ public class IntakeOut extends Command {
 
   @Override
   public void execute() {
-    m_intake.runArm(-2);
+    m_intake.runArm(-4);
   }
 
   @Override
