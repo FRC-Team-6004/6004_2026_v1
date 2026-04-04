@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.estimator.PoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -25,14 +26,26 @@ public class VisionSub extends SubsystemBase {
 
     /* Cameras */
     private final PhotonCamera hubFwdCam = new PhotonCamera("hubFwdCam");
+    private final PhotonCamera BLSwerve = new PhotonCamera("BLSwerve");
+    private final PhotonCamera BRSwerve = new PhotonCamera("BRSwerve");
 
     /* Robot -> camera transforms */
     private final Transform3d robotToHubFwd = new Transform3d(
-            new Translation3d(0.0, 0.0, Units.inchesToMeters(19)),
-            new Rotation3d(Math.toRadians(0), Math.toRadians(20.5), Math.toRadians(0)));
+            new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(3), Units.inchesToMeters(21)),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(21.5), Math.toRadians(0)));
+
+    private final Transform3d robotToBLSwerve = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-10.68), Units.inchesToMeters(-10.5), Units.inchesToMeters(7.875)),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(28), Math.toRadians(180 - 22.5)));
+
+    private final Transform3d robotToBRSwerve = new Transform3d(
+            new Translation3d(Units.inchesToMeters(10.68), Units.inchesToMeters(-10.5), Units.inchesToMeters(7.875)),
+            new Rotation3d(Math.toRadians(0), Math.toRadians(30), Math.toRadians(180 + 22.5)));
 
     /* Pose estimators */
     private PhotonPoseEstimator hubFwdEstimator;
+    private PhotonPoseEstimator BLSwerveEstimator;
+    private PhotonPoseEstimator BRSwerveEstimator;
 
 
     public VisionSub() {
@@ -45,6 +58,8 @@ public class VisionSub extends SubsystemBase {
         }
 
         hubFwdEstimator = new PhotonPoseEstimator(fieldLayout, robotToHubFwd);
+        BLSwerveEstimator = new PhotonPoseEstimator(fieldLayout, robotToBLSwerve);
+        BRSwerveEstimator = new PhotonPoseEstimator(fieldLayout, robotToBRSwerve);
 
     }
 
@@ -68,6 +83,8 @@ public class VisionSub extends SubsystemBase {
         List<EstimatedRobotPose> poses = new ArrayList<>();
 
         getEstimate(hubFwdCam, hubFwdEstimator).ifPresent(poses::add);
+        getEstimate(BLSwerve, BLSwerveEstimator).ifPresent(poses::add);
+        getEstimate(BRSwerve, BRSwerveEstimator).ifPresent(poses::add);
 
         return poses;
     }
@@ -124,15 +141,36 @@ public class VisionSub extends SubsystemBase {
 
     public void addVisionMeasurement(CommandSwerveDrivetrain drivetrain) {
 
-        Optional<EstimatedRobotPose> estimate = getBestEstimate();
-        if (estimate.isEmpty()) return;
+        Optional<EstimatedRobotPose> estimate = getEstimate(hubFwdCam, hubFwdEstimator);
+            if (!estimate.isEmpty()) {
+                EstimatedRobotPose visionPose = estimate.get();
+                drivetrain.addVisionMeasurement(
+                    visionPose.estimatedPose.toPose2d(),
+                    visionPose.timestampSeconds
+                );
+            }
 
-        EstimatedRobotPose visionPose = estimate.get();
+        
+        // estimate = getEstimate(BLSwerve, BLSwerveEstimator);
+        //     if (!estimate.isEmpty()) {
+        //         EstimatedRobotPose visionPose = estimate.get();
+        //         drivetrain.addVisionMeasurement(
+        //             visionPose.estimatedPose.toPose2d(),
+        //             visionPose.timestampSeconds
+        //         );
+        //     }
 
-        drivetrain.addVisionMeasurement(
-            visionPose.estimatedPose.toPose2d(),
-            visionPose.timestampSeconds
-        );
+
+        
+        // estimate = getEstimate(BRSwerve, BRSwerveEstimator);
+        //     if (!estimate.isEmpty()) {
+        //         EstimatedRobotPose visionPose = estimate.get();
+        //         drivetrain.addVisionMeasurement(
+        //             visionPose.estimatedPose.toPose2d(),
+        //             visionPose.timestampSeconds
+        //         );
+        //     }
+
     }
 
     @Override

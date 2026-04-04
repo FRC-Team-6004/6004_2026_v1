@@ -140,7 +140,7 @@ public class IntakeReal implements IntakeIO {
     @Override
     public void periodic() {
         double actualPos = targetPos + Math.cos(t.get() * 12.5) * 0.5;
-        setArmControl(Math.min(actualPos, 0));
+        // setArmControl(Math.min(actualPos, 0));
     }
 
     private static void applyConfigWithRetry(TalonFX motor, TalonFXConfiguration config) {

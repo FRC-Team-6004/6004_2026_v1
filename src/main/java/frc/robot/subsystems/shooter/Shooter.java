@@ -50,13 +50,13 @@ public class Shooter extends SubsystemBase {
             sim.periodic();
         }
         
-        if (cycler == 10) {
-            cycler = 0;
-            setServoAngle(ShooterSide.MAIN, servoAngle.get());
+        // if (cycler == 10) {
+        //     cycler = 0;
+        //     setServoAngle(ShooterSide.MAIN, servoAngle.get());
         
-            double mainRPM0 = rpm.get();
-            setRPM(ShooterSide.MAIN, mainRPM0);
-        }
+        //     double mainRPM0 = rpm.get();
+        //     setRPM(ShooterSide.MAIN, mainRPM0);
+        // }
 
 
         cycler++;

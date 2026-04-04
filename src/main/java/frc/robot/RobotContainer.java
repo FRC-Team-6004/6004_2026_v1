@@ -191,16 +191,16 @@ public class RobotContainer {
 
         switch(mode) {
             case 1 : 
-                xs += Math.pow(joystick.getLeftY(), 2);
-                ys += Math.pow(joystick.getLeftX(), 2);
+                xs += Math.pow(joystick.getLeftY(), 3);
+                ys += Math.pow(joystick.getLeftX(), 3);
                 xs *= speedDecay;
                 ys *= speedDecay;
-                rs = Math.pow(joystick.getRightX(), 2);
+                rs = Math.pow(joystick.getRightX(), 3);
                 break;
             default : 
-                xs = Math.pow(joystick.getLeftY(), 2) * maxN;
-                ys = Math.pow(joystick.getLeftX(), 2) * maxN;
-                rs = Math.pow(joystick.getRightX(), 2);
+                xs = Math.pow(joystick.getLeftY(), 3) * maxN;
+                ys = Math.pow(joystick.getLeftX(), 3) * maxN;
+                rs = Math.pow(joystick.getRightX(), 3);
                 break;
         }
     }
