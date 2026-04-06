@@ -22,7 +22,7 @@ public class AutoCommands {
                 intake,
                 shootTable.getRPM(getDistance(drivetrain)),
                 shootTable.getServo(getDistance(drivetrain))
-        );
+        ).withTimeout(5);
     }
 
     /** Move intake arm out for a short duration */

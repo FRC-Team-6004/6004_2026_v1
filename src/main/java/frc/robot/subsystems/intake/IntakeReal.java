@@ -18,9 +18,12 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+
+import org.littletonrobotics.junction.Logger;
 
 /**
  * Intake pivot subsystem with two mechanically mirrored arm motors.
@@ -49,21 +52,21 @@ public class IntakeReal implements IntakeIO {
 
 
     public IntakeReal() {
-        pivotLeader   = new TalonFX(IntakeConstants.kLeftMotorID);
-        pivotFollower = new TalonFX(IntakeConstants.kRightMotorID);
-        rollerMotor   = new TalonFX(IntakeConstants.kRollerMotorID);
-        rollerMotorOpposed   = new TalonFX(IntakeConstants.kRollerMotor2ID);
+        pivotLeader        = new TalonFX(IntakeConstants.kLeftMotorID);
+        pivotFollower      = new TalonFX(IntakeConstants.kRightMotorID);
+        rollerMotor        = new TalonFX(IntakeConstants.kRollerMotorID);
+        rollerMotorOpposed = new TalonFX(IntakeConstants.kRollerMotor2ID);
 
         t.start();
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
 
-        config.MotionMagic.MotionMagicCruiseVelocity = 80;   // rotations/sec (tune)
-        config.MotionMagic.MotionMagicAcceleration = 160;    // rotations/sec^2 (tune)
-        config.MotionMagic.MotionMagicJerk = 1000;           // controls “curve” aggressiveness
-        config.MotionMagic.MotionMagicExpo_kV = 0.12;   // velocity feedforward (start small)
-        config.MotionMagic.MotionMagicExpo_kA = 0.01;   // accel feedforward
+        config.MotionMagic.MotionMagicCruiseVelocity = 10;   // rotations/sec
+        config.MotionMagic.MotionMagicAcceleration = 30;    // rotations/sec^2
+        config.MotionMagic.MotionMagicJerk = 1000;          // controls curve aggressiveness
+        config.MotionMagic.MotionMagicExpo_kV = 0.12;       // velocity feedforward
+        config.MotionMagic.MotionMagicExpo_kA = 0.01;       // accel feedforward
 
 
         // Brake mode
@@ -139,8 +142,12 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void periodic() {
-        double actualPos = targetPos + Math.cos(t.get() * 12.5) * 0.5;
+        double actualPos = targetPos;
+        if (RobotContainer.bounceIntake) {
+            actualPos = (targetPos + Math.sin(t.get() * 7.5) * 1) + 0.5;
+        }
         // setArmControl(Math.min(actualPos, 0));
+        Logger.recordOutput("/intake/arm position", getAngle());
     }
 
     private static void applyConfigWithRetry(TalonFX motor, TalonFXConfiguration config) {

@@ -167,7 +167,7 @@ public static int MAP_WIDTH = 32;
       public static final int kRollerMotorID = 23;
       public static final int kRollerMotor2ID = 27;
 
-      public static final double PIDout = -5.85;
+      public static final double PIDout = -6;
       public static final double PIDin = 0.0;
 
 

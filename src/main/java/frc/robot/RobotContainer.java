@@ -90,6 +90,7 @@ public class RobotContainer {
 
     public final VisionSub vision = new VisionSub();
 
+    public static boolean bounceIntake = false;
 
     private final SendableChooser<Command> autoChooser;       
 
@@ -175,6 +176,9 @@ public class RobotContainer {
 
     public void periodic() { 
 
+        // storageSub.runFloor(0.2);
+        // storageSub.runTop(0.2);
+
         Pose2d currentPose = drivetrain.getState().Pose;
         Pose2d targetPose = isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
         Translation2d robotTranslation = currentPose.getTranslation();
@@ -184,23 +188,23 @@ public class RobotContainer {
         double distance = robotTranslation.getDistance(targetTranslation);
         Shooter.distance = distance;
 
-        int mode = 1;
+        int mode = 0;
 
         //mode 1: slippery profile
         //mode default: reg
 
         switch(mode) {
             case 1 : 
-                xs += Math.pow(joystick.getLeftY(), 3);
-                ys += Math.pow(joystick.getLeftX(), 3);
+                xs += joystick.getLeftY() * (bounceIntake ? 0.5 : 1);
+                ys += joystick.getLeftX() * (bounceIntake ? 0.5 : 1);
                 xs *= speedDecay;
                 ys *= speedDecay;
-                rs = Math.pow(joystick.getRightX(), 3);
+                rs = joystick.getRightX() * (bounceIntake ? 0.5 : 1);
                 break;
             default : 
-                xs = Math.pow(joystick.getLeftY(), 3) * maxN;
-                ys = Math.pow(joystick.getLeftX(), 3) * maxN;
-                rs = Math.pow(joystick.getRightX(), 3);
+                xs = joystick.getLeftY() * maxN * (bounceIntake ? 0.5 : 1);
+                ys = joystick.getLeftX()* maxN * (bounceIntake ? 0.5 : 1);
+                rs = joystick.getRightX() * (bounceIntake ? 0.5 : 1);
                 break;
         }
     }

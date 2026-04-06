@@ -59,7 +59,7 @@ public class Shooter extends SubsystemBase {
         // }
 
 
-        cycler++;
+        // cycler++;
 
         
         double mainRPM = getRPM(ShooterSide.MAIN);

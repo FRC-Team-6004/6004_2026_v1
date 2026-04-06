@@ -4,6 +4,8 @@ import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.intake.Intake;
 import edu.wpi.first.wpilibj2.command.Command;
 
+import frc.robot.RobotContainer;
+
 public class intakeCommand extends Command {
     private final Intake m_intake;
     private final StorageSub m_StorageSub;
@@ -16,6 +18,7 @@ public class intakeCommand extends Command {
 
     @Override
     public void initialize() {
+        RobotContainer.bounceIntake = true;
     }
 
     @Override
@@ -28,6 +31,8 @@ public class intakeCommand extends Command {
     public void end(boolean interrupted) {
         m_intake.runRollers(0);
         m_StorageSub.runFloor(0);
+
+        RobotContainer.bounceIntake = false;
     }
 
     @Override
