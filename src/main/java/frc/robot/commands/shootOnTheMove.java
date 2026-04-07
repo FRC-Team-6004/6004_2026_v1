@@ -27,7 +27,7 @@ public class shootOnTheMove extends Command {
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-    private static final double ROT_KP = 2.5;
+    private static final double ROT_KP = 5;
 
     private final Shooter shooterSub;
     private final StorageSub storageSub;

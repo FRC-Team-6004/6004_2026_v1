@@ -25,6 +25,8 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+
 /**
  * Intake pivot subsystem with two mechanically mirrored arm motors.
  * One leader, one inverted follower, both using CTRE position control
@@ -61,6 +63,11 @@ public class IntakeReal implements IntakeIO {
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
+
+        TorqueCurrentFOC TCF = new TorqueCurrentFOC(0);
+
+        config.Audio.AllowMusicDurDisable = true;
+        rollerConfig.Audio.AllowMusicDurDisable = true;
 
         config.MotionMagic.MotionMagicCruiseVelocity = 10;   // rotations/sec
         config.MotionMagic.MotionMagicAcceleration = 30;    // rotations/sec^2
@@ -144,9 +151,9 @@ public class IntakeReal implements IntakeIO {
     public void periodic() {
         double actualPos = targetPos;
         if (RobotContainer.bounceIntake) {
-            actualPos = (targetPos + Math.sin(t.get() * 7.5) * 1) + 0.5;
+            actualPos = (targetPos + Math.sin(t.get() * 10) * 0.5) + 0.25;
         }
-        // setArmControl(Math.min(actualPos, 0));
+        setArmControl(Math.min(actualPos, 0));
         Logger.recordOutput("/intake/arm position", getAngle());
     }
 
@@ -167,6 +174,7 @@ public class IntakeReal implements IntakeIO {
     @Override
     public void runRollers(double speed) {
         rollerMotor.set(speed);
+        // rollerMotor.setControl(new TorqueCurrentFOC(speed));
     }
 
     @Override

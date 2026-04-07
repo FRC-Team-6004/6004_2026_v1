@@ -35,7 +35,7 @@ public class AutoCommands {
     /** Start intake rollers and storage feed */
     public static Command startIntake(Intake intake, StorageSub storage) {
         return new InstantCommand(() -> {
-            intake.runRollers(-10);
+            intake.runRollers(-15);
             storage.runFloor(0);
         }, intake, storage);
     }

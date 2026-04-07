@@ -1,12 +1,17 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 
 import edu.wpi.first.wpilibj.Servo;
 import frc.robot.Constants.ShooterConstants;
+
+import com.ctre.phoenix6.controls.RainbowAnimation;
 
 
 import java.util.EnumMap;
@@ -20,6 +25,8 @@ public class ShooterReal implements ShooterIO {
             .withAcceleration(10)
             .withFeedForward(2)
             .withSlot(0);
+
+        
         final Servo hood;
         final Servo hood2;
 
@@ -29,11 +36,31 @@ public class ShooterReal implements ShooterIO {
         double targetRPM = 0.0;
 
         ShooterUnit(int motorID, int followerID, int servoChannel, int servoTwo) {
+
+            var motorConfig = new TalonFXConfiguration();
+
+            motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+            motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
+            motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+            motorConfig.CurrentLimits.StatorCurrentLimit = 120;
+            motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+            motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+            motorConfig.Slot0.kP = 10;
+            motorConfig.Audio.AllowMusicDurDisable = true;
+
             motor = new TalonFX(motorID);
+
             followerMotor = new TalonFX(followerID);
+
+            motor.getConfigurator().apply(motorConfig);
+            followerMotor.getConfigurator().apply(motorConfig);
+
             followerMotor.setControl(new Follower(motorID, MotorAlignmentValue.Opposed));
+            
             hood = new Servo(servoChannel);
             hood2 = new Servo(servoTwo);
+            
+
         }
     }
 

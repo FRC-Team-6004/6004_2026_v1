@@ -37,6 +37,7 @@ import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
 import frc.robot.commands.ShootAtHub;
 import frc.robot.commands.intakeCommand;
+import frc.robot.commands.shootOnTheMove;
 import frc.robot.commands.unjam;
 import frc.robot.commands.shooterUnjam;
 import frc.robot.generated.TunerConstants;
@@ -56,7 +57,7 @@ import com.pathplanner.lib.trajectory.*;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import frc.robot.util.NamedCommandManager;
-
+import frc.robot.util.ShotLUT;
 import frc.robot.commands.ShootCommands;
 
 public class RobotContainer {
@@ -92,7 +93,9 @@ public class RobotContainer {
 
     public static boolean bounceIntake = false;
 
-    private final SendableChooser<Command> autoChooser;       
+    private final SendableChooser<Command> autoChooser; 
+    
+    private final ShotLUT shotLUT = new ShotLUT();
 
     private final GridDistanceProcessing gdp = new GridDistanceProcessing(
         PathingConstants.map,
@@ -157,11 +160,16 @@ public class RobotContainer {
 
         op.leftBumper().whileTrue(new intakeCommand(intake, storageSub));
 
+
         op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
         op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, intake));
         op.leftTrigger(0.05).whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 4500, 0.5));
+
+        joystick.leftTrigger(0.05).whileTrue(new shootOnTheMove(drivetrain, shooter, storageSub, intake, shotLUT));
+        joystick.rightTrigger(0.05).whileTrue(new intakeCommand(intake, storageSub));
+
 
         op.b().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3000, 0.0));
         op.a().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3500, 0.0));
@@ -186,7 +194,7 @@ public class RobotContainer {
         // Vector from robot → target
         Translation2d toTarget = targetTranslation.minus(robotTranslation);
         double distance = robotTranslation.getDistance(targetTranslation);
-        Shooter.distance = distance;
+        Shooter.distance = distance * .96;
 
         int mode = 0;
 
@@ -195,16 +203,16 @@ public class RobotContainer {
 
         switch(mode) {
             case 1 : 
-                xs += joystick.getLeftY() * (bounceIntake ? 0.5 : 1);
-                ys += joystick.getLeftX() * (bounceIntake ? 0.5 : 1);
+                xs += joystick.getLeftY() * (bounceIntake ? 0.25 : 1);
+                ys += joystick.getLeftX() * (bounceIntake ? 0.25 : 1);
                 xs *= speedDecay;
                 ys *= speedDecay;
-                rs = joystick.getRightX() * (bounceIntake ? 0.5 : 1);
+                rs = joystick.getRightX() * (bounceIntake ? 0.25 : 1);
                 break;
             default : 
-                xs = joystick.getLeftY() * maxN * (bounceIntake ? 0.5 : 1);
-                ys = joystick.getLeftX()* maxN * (bounceIntake ? 0.5 : 1);
-                rs = joystick.getRightX() * (bounceIntake ? 0.5 : 1);
+                xs = joystick.getLeftY() * maxN * (bounceIntake ? 0.25 : 1);
+                ys = joystick.getLeftX()* maxN * (bounceIntake ? 0.25 : 1);
+                rs = joystick.getRightX() * (bounceIntake ? 0.25 : 1);
                 break;
         }
     }

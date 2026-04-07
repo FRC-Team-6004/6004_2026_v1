@@ -6,11 +6,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShooterLookup;
 import frc.robot.Constants.visionConstants;
@@ -25,6 +29,7 @@ public class ShootAtHub extends Command {
 
     private final Command shooterCommand;
     private final ShooterLookup shootTable;
+    private final Shooter shooter;
 
     public ShootAtHub(
         CommandSwerveDrivetrain drivetrain,
@@ -32,15 +37,12 @@ public class ShootAtHub extends Command {
         StorageSub storage,
         Intake intake
     ) {
+        this.shooter = shooterSub;
         this.swerve = drivetrain;
         this.shootTable = new ShooterLookup();
 
-        Pose2d currentPose = swerve.getState().Pose;
-        Pose2d targetPose = isRed(currentPose) ? visionConstants.redHubPos : visionConstants.hubPos;
-        double distance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-
-        double RPM = Math.abs(shootTable.getRPM(Math.abs(distance)));
-        double servo = shootTable.getServo(Math.abs(distance));
+        double RPM = Math.abs(shootTable.getRPM(Math.abs(Shooter.distance)));
+        double servo = shootTable.getServo(Math.abs(Shooter.distance));
 
         this.shooterCommand = ShootCommands.createShootCommand(
             shooterSub,
@@ -72,8 +74,10 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(omega)
         );
-
+        shooter.setRPM(ShooterSide.MAIN, Math.abs(shootTable.getRPM(Math.abs(Shooter.distance))));
+        shooter.setServoAngle(ShooterSide.MAIN, Math.abs(shootTable.getServo(Math.abs(Shooter.distance))));
         shooterCommand.execute();
+        
     }
 
     @Override

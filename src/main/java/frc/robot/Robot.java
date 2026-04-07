@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import org.littletonrobotics.junction.LoggedRobot;
@@ -29,6 +30,9 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 import org.ironmaple.simulation.drivesims.COTS;
 
+import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.configs.AudioConfigs;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
@@ -36,6 +40,8 @@ public class Robot extends LoggedRobot {
     private final RobotContainer m_robotContainer;
 
     public static Optional<Alliance> alliance = DriverStation.getAlliance();
+
+    Orchestra orchestra = new Orchestra();
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -55,6 +61,15 @@ public class Robot extends LoggedRobot {
 
         Logger.start();
 
+        orchestra.addInstrument(new TalonFX(20));
+        orchestra.addInstrument(new TalonFX(21));
+        orchestra.addInstrument(new TalonFX(22));
+        orchestra.addInstrument(new TalonFX(23));
+        orchestra.addInstrument(new TalonFX(24));
+        orchestra.addInstrument(new TalonFX(25));
+        orchestra.addInstrument(new TalonFX(27));
+
+        orchestra.loadMusic("pacman.chrp");
 
         m_robotContainer = new RobotContainer();
 
@@ -66,7 +81,16 @@ public class Robot extends LoggedRobot {
 
         m_robotContainer.periodic();
         m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run(); 
+        CommandScheduler.getInstance().run();
+        
+        if (RobotController.getUserButton()) {
+            if (orchestra.isPlaying()) {
+                orchestra.stop();
+            } else {
+                orchestra.loadMusic("pacman.chrp");
+                orchestra.play();
+            }
+        }
     }
 
     @Override
@@ -103,6 +127,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
+        orchestra.stop();
+
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
         }

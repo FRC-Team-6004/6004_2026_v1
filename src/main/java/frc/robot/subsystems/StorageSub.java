@@ -30,6 +30,8 @@ public class StorageSub extends SubsystemBase {
         motorConfig.CurrentLimits.SupplyCurrentLimit = 15;
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
+        motorConfig.Audio.AllowMusicDurDisable = true;
+
         topRoller.getConfigurator().apply(motorConfig);
 
         var neoConfig = new SparkFlexConfig();

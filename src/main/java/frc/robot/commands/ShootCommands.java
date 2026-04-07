@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 
@@ -30,7 +32,7 @@ public class ShootCommands {
                 timer.start();
 
                 shooter.setRPM(ShooterSide.MAIN, rpm);
-                shooter.setServoAngle(ShooterSide.MAIN, servoAngle);
+                shooter.setServoAngle(ShooterSide.MAIN, rpm);
             }
 
             @Override
@@ -61,6 +63,9 @@ public class ShootCommands {
             public boolean isFinished() {
                 return false; // use withTimeout externally
             }
+
+
         };
     }
+    
 }
