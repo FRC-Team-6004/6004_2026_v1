@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -14,20 +15,29 @@ import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShotCalc;
 import frc.robot.util.ShotLUT;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.visionConstants;
+
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class shootOnTheMove extends Command {
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final Timer t = new Timer();
 
+    private final CommandXboxController joystick = new CommandXboxController(0);
 
     private final CommandSwerveDrivetrain swerve;
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     private static final double ROT_KP = 5;
+
+    private static final double TOTAL_LATENCY_SEC = -0.5;
 
     private final Shooter shooterSub;
     private final StorageSub storageSub;
@@ -43,13 +53,14 @@ public class shootOnTheMove extends Command {
         Intake intake,
         ShotLUT lut
     ) {
+        t.start();
+
         this.swerve = drivetrain;
         this.shooterSub = shooterSub;
         this.storageSub = storage;
         this.intakeSub = intake;
         this.shotLUT = lut;
 
-        // Initialize SOTM calculator with default config
         this.shotCalc = new ShotCalc();
         this.shotCalc.loadShotLUT(this.shotLUT);
 
@@ -59,52 +70,81 @@ public class shootOnTheMove extends Command {
     @Override
     public void initialize() {
         shotCalc.resetWarmStart();
+        t.reset();
     }
 
     @Override
     public void execute() {
         Pose2d currentPose = swerve.getState().Pose;
-        // Hub center position
+
+        // Select correct hub
         Translation2d hubCenter = isRed(currentPose)
                 ? visionConstants.redHubPos.getTranslation()
                 : visionConstants.hubPos.getTranslation();
 
-        // Unit vector pointing from robot to hub
+        // Direction to hub
         Translation2d toHub = hubCenter.minus(currentPose.getTranslation());
-        double mag = Math.sqrt(toHub.getX() * toHub.getX() + toHub.getY() * toHub.getY());
+        double mag = toHub.getNorm();
         Translation2d hubForward = mag > 1e-6
-                ? new Translation2d(toHub.getX() / mag, toHub.getY() / mag)
-                : new Translation2d(0, 0);
+                ? toHub.div(mag)
+                : new Translation2d();
+
+        var chassisSpeeds = swerve.getKinematics()
+                .toChassisSpeeds(swerve.getState().ModuleStates);
 
         Translation2d robotChassisSpeeds = new Translation2d(
-           swerve.getKinematics().toChassisSpeeds(swerve.getState().ModuleStates).vxMetersPerSecond,
-           swerve.getKinematics().toChassisSpeeds(swerve.getState().ModuleStates).vyMetersPerSecond 
+            chassisSpeeds.vxMetersPerSecond,
+            chassisSpeeds.vyMetersPerSecond
         );
 
-        Translation2d fieldChassisSpeeds = new Translation2d(
-           swerve.getKinematics().toChassisSpeeds(swerve.getState().ModuleStates).vxMetersPerSecond,
-           swerve.getKinematics().toChassisSpeeds(swerve.getState().ModuleStates).vyMetersPerSecond 
-        ).rotateBy(swerve.getState().RawHeading);
+        // Convert to field-relative
+        Translation2d fieldChassisSpeeds = robotChassisSpeeds
+                .rotateBy(swerve.getState().RawHeading);
 
+        // Shot calculation
         ShotCalc.ShotInputs inputs = new ShotCalc.ShotInputs(
             currentPose,
             robotChassisSpeeds,
             fieldChassisSpeeds,
             hubCenter,
             hubForward,
-            1.0 // assume full vision confidence
+            1.0
         );
 
         ShotCalc.LaunchParameters params = shotCalc.calculate(inputs);
 
         if (params.isValid() && params.confidence() > 50) {
+
             shooterSub.setRPM(ShooterSide.MAIN, params.rpm());
-            // Optionally set hood servo using LUT angle
+
             double hoodAngle = shotLUT.getAngle(params.solvedDistanceM());
             shooterSub.setServoAngle(ShooterSide.MAIN, hoodAngle);
 
-            // Field-centric drive to maintain SOTM heading
-            double headingError = params.driveAngle().getRadians() - currentPose.getRotation().getRadians();
+
+            // Predict robot motion during latency
+            Translation2d motionOffset = fieldChassisSpeeds.times(TOTAL_LATENCY_SEC);
+
+            // Adjusted aim point
+            Translation2d adjustedToHub = hubCenter.minus(
+                currentPose.getTranslation().plus(motionOffset)
+            );
+
+            Logger.recordOutput("/shootOnTheMove/AdjustedToHub", currentPose.plus(new Transform2d(motionOffset, currentPose.getRotation())));
+
+            double targetAngle = Math.atan2(
+                adjustedToHub.getY(),
+                adjustedToHub.getX()
+            );
+
+            double currentAngle = currentPose.getRotation().getRadians();
+
+            double headingError = targetAngle - currentAngle;
+
+            headingError = Math.atan2(
+                Math.sin(headingError),
+                Math.cos(headingError)
+            );
+
             double omega = headingError * ROT_KP;
 
             swerve.setControl(
@@ -112,21 +152,21 @@ public class shootOnTheMove extends Command {
                      .withVelocityY(joystick.getLeftX())
                      .withRotationalRate(omega)
             );
+
         } else {
-            // Stop rotation if shot invalid
             swerve.setControl(
                 drive.withVelocityX(0)
                      .withVelocityY(0)
                      .withRotationalRate(0)
             );
         }
-
-        // Run storage/intake as needed
-        storageSub.runFloor(0.5);
-        storageSub.runTop(0.5);
-        intakeSub.runRollers(-2);
-        intakeSub.setArmControl(-3);
-
+        if (t.get() > 0.5) {
+            // Run mechanisms
+            storageSub.runFloor(2);
+            storageSub.runTop(2);
+            intakeSub.runRollers(-2);
+            // intakeSub.setArmControl(-3);
+        }
     }
 
     @Override
@@ -136,10 +176,11 @@ public class shootOnTheMove extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(0)
         );
-
+        shooterSub.setRPM(ShooterSide.MAIN, 0);
         storageSub.runFloor(0);
         storageSub.runTop(0);
         intakeSub.runRollers(0);
+        intakeSub.setArmControl(IntakeConstants.PIDout);
 
     }
 

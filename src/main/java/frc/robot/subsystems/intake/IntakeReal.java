@@ -83,7 +83,7 @@ public class IntakeReal implements IntakeIO {
 
 
         // Current limiting
-        config.CurrentLimits.SupplyCurrentLimit = 30;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         config.CurrentLimits.StatorCurrentLimit = 120;
@@ -92,7 +92,7 @@ public class IntakeReal implements IntakeIO {
         rollerConfig.CurrentLimits.SupplyCurrentLimit = 10;
         rollerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        rollerConfig.CurrentLimits.StatorCurrentLimit = 45;
+        rollerConfig.CurrentLimits.StatorCurrentLimit = 40;
         rollerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
 
@@ -153,7 +153,7 @@ public class IntakeReal implements IntakeIO {
         if (RobotContainer.bounceIntake) {
             actualPos = (targetPos + Math.sin(t.get() * 10) * 0.5) + 0.25;
         }
-        setArmControl(Math.min(actualPos, 0));
+        // setArmControl(Math.min(actualPos, 0));
         Logger.recordOutput("/intake/arm position", getAngle());
     }
 

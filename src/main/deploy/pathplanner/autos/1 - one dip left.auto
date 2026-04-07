@@ -19,6 +19,12 @@
                 "data": {
                   "name": "startIntake"
                 }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.3
+                }
               }
             ]
           }
@@ -39,12 +45,6 @@
           "type": "named",
           "data": {
             "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
           }
         }
       ]

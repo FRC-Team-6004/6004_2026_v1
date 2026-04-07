@@ -48,7 +48,7 @@ public class ShotCalc {
     /** Solve for the shot given inputs. */
     public LaunchParameters calculate(ShotInputs inputs) {
         double distance = inputs.robotPose.getTranslation().getDistance(inputs.targetPos);
-        ShotParam params = lut.get(distance);
+        ShotParam params = lut.get(distance * .95);
 
         double rpm = params.rpm();
         double tof = params.tofSec();

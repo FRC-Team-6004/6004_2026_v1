@@ -9,6 +9,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShooterLookup;
 import frc.robot.Constants.visionConstants;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 
 public class AutoCommands {
@@ -33,19 +34,19 @@ public class AutoCommands {
     }
 
     /** Start intake rollers and storage feed */
-    public static Command startIntake(Intake intake, StorageSub storage) {
+    public static Command startIntake(Intake intake) {
         return new InstantCommand(() -> {
-            intake.runRollers(-15);
-            storage.runFloor(0);
-        }, intake, storage);
+            RobotContainer.bounceIntake = true;
+            intake.runRollers(-8);
+        }, intake);
     }
 
     /** Stop intake and storage */
-    public static Command stopIntake(Intake intake, StorageSub storage) {
+    public static Command stopIntake(Intake intake) {
         return new InstantCommand(() -> {
             intake.runRollers(0);
-            storage.runFloor(0);
-        }, intake, storage);
+            RobotContainer.bounceIntake = true;
+        }, intake);
     }
 
     /** Helper to calculate distance to hub */

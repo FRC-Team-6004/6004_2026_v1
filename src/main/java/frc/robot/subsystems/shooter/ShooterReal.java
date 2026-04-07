@@ -39,7 +39,7 @@ public class ShooterReal implements ShooterIO {
 
             var motorConfig = new TalonFXConfiguration();
 
-            motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+            motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
             motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
             motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
             motorConfig.CurrentLimits.StatorCurrentLimit = 120;
@@ -56,7 +56,7 @@ public class ShooterReal implements ShooterIO {
             followerMotor.getConfigurator().apply(motorConfig);
 
             followerMotor.setControl(new Follower(motorID, MotorAlignmentValue.Opposed));
-            
+
             hood = new Servo(servoChannel);
             hood2 = new Servo(servoTwo);
             

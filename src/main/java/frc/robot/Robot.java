@@ -69,11 +69,22 @@ public class Robot extends LoggedRobot {
         orchestra.addInstrument(new TalonFX(25));
         orchestra.addInstrument(new TalonFX(27));
 
+        orchestra.addInstrument(new TalonFX(5, "drive train"));
+        orchestra.addInstrument(new TalonFX(6, "drive train"));
+        orchestra.addInstrument(new TalonFX(9, "drive train"));
+        orchestra.addInstrument(new TalonFX(11, "drive train"));
+        orchestra.addInstrument(new TalonFX(7, "drive train"));
+        orchestra.addInstrument(new TalonFX(10, "drive train"));
+        orchestra.addInstrument(new TalonFX(12, "drive train"));
+        orchestra.addInstrument(new TalonFX(16, "drive train"));
+
         orchestra.loadMusic("pacman.chrp");
 
         m_robotContainer = new RobotContainer();
 
     }
+
+    boolean userPressed = false;
 
     @Override
     public void robotPeriodic() {
@@ -82,14 +93,19 @@ public class Robot extends LoggedRobot {
         m_robotContainer.periodic();
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run();
-        
+
         if (RobotController.getUserButton()) {
-            if (orchestra.isPlaying()) {
-                orchestra.stop();
-            } else {
-                orchestra.loadMusic("pacman.chrp");
-                orchestra.play();
+            if (!userPressed) {
+                userPressed = true;
+                if (orchestra.isPlaying()) {
+                    orchestra.stop();
+                } else {
+                    orchestra.loadMusic("pacman.chrp");
+                    orchestra.play();
+                }
             }
+        } else {
+            userPressed = false;
         }
     }
 

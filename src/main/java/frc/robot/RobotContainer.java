@@ -7,32 +7,23 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.PathingConstants;
 import frc.robot.Constants.visionConstants;
 import frc.robot.commands.AutoCommands;
-import frc.robot.commands.CustomPathing;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
 import frc.robot.commands.ShootAtHub;
@@ -44,18 +35,13 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.VisionSub;
-import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.GridDistanceProcessing;
 import frc.robot.subsystems.shooter.Shooter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.trajectory.*;
+
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.config.PIDConstants;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.util.ShotLUT;
 import frc.robot.commands.ShootCommands;
@@ -116,8 +102,8 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub, intake));
         NamedCommands.registerCommand("intakeOut", AutoCommands.extendAuto(intake));
-        NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake, storageSub));
-        NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake, storageSub));
+        NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake));
+        NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake));
 
         NamedCommandManager.registerNamedCommands();
 
@@ -196,23 +182,25 @@ public class RobotContainer {
         double distance = robotTranslation.getDistance(targetTranslation);
         Shooter.distance = distance * .96;
 
-        int mode = 0;
+        int mode = 1;
 
         //mode 1: slippery profile
         //mode default: reg
+        double normalMaxSpeed = 0.75;
+        double speedWhileIntaking = 0.3;
 
         switch(mode) {
             case 1 : 
-                xs += joystick.getLeftY() * (bounceIntake ? 0.25 : 1);
-                ys += joystick.getLeftX() * (bounceIntake ? 0.25 : 1);
+                xs += joystick.getLeftY() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
+                ys += joystick.getLeftX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
                 xs *= speedDecay;
                 ys *= speedDecay;
-                rs = joystick.getRightX() * (bounceIntake ? 0.25 : 1);
+                rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
                 break;
             default : 
-                xs = joystick.getLeftY() * maxN * (bounceIntake ? 0.25 : 1);
-                ys = joystick.getLeftX()* maxN * (bounceIntake ? 0.25 : 1);
-                rs = joystick.getRightX() * (bounceIntake ? 0.25 : 1);
+                xs = joystick.getLeftY() * maxN * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
+                ys = joystick.getLeftX()* maxN * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
+                rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
                 break;
         }
     }
