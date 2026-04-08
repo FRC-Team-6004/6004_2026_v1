@@ -102,7 +102,7 @@ public class IntakeReal implements IntakeIO {
             .withPeakReverseVoltage(Volts.of(-12));
 
         // Slot 0 PID + gravity compensation
-        config.Slot0.kP = 4;
+        config.Slot0.kP = 3;
         config.Slot0.kI = 0.0;
         config.Slot0.kD = 0.1;
         config.Slot0.kG = .12;
@@ -150,10 +150,12 @@ public class IntakeReal implements IntakeIO {
     @Override
     public void periodic() {
         double actualPos = targetPos;
-        if (RobotContainer.bounceIntake) {
-            actualPos = (targetPos + Math.sin(t.get() * 10) * 0.5) + 0.25;
+        // if (RobotContainer.bounceIntake) {
+        //     actualPos = (targetPos + Math.sin(t.get() * 10) * 0.5) + 0.25;
+        // }
+        if (Math.abs(getAngle() - targetPos) > 0.1) {
+            setArmControl(Math.min(actualPos, 0));
         }
-        // setArmControl(Math.min(actualPos, 0));
         Logger.recordOutput("/intake/arm position", getAngle());
     }
 

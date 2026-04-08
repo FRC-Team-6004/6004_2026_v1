@@ -122,7 +122,7 @@ public class shootOnTheMove extends Command {
 
 
             // Predict robot motion during latency
-            Translation2d motionOffset = fieldChassisSpeeds.times(TOTAL_LATENCY_SEC);
+            Translation2d motionOffset = fieldChassisSpeeds.times(-TOTAL_LATENCY_SEC);
 
             // Adjusted aim point
             Translation2d adjustedToHub = hubCenter.minus(

@@ -33,6 +33,7 @@ import frc.robot.commands.unjam;
 import frc.robot.commands.shooterUnjam;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ShiftTimer;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.VisionSub;
 import frc.robot.subsystems.intake.Intake;
@@ -45,6 +46,8 @@ import com.pathplanner.lib.auto.NamedCommands;
 import frc.robot.util.NamedCommandManager;
 import frc.robot.util.ShotLUT;
 import frc.robot.commands.ShootCommands;
+
+import frc.robot.subsystems.leds;
 
 public class RobotContainer {
     private double MaxSpeed = .70 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -82,6 +85,10 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser; 
     
     private final ShotLUT shotLUT = new ShotLUT();
+
+    private final leds led = new leds();
+
+    private final ShiftTimer st = new ShiftTimer();
 
     private final GridDistanceProcessing gdp = new GridDistanceProcessing(
         PathingConstants.map,
@@ -181,7 +188,6 @@ public class RobotContainer {
         Translation2d toTarget = targetTranslation.minus(robotTranslation);
         double distance = robotTranslation.getDistance(targetTranslation);
         Shooter.distance = distance * .96;
-
         int mode = 1;
 
         //mode 1: slippery profile
@@ -202,6 +208,11 @@ public class RobotContainer {
                 ys = joystick.getLeftX()* maxN * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
                 rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
                 break;
+        }
+        if (st.Active()) {
+            led.reversedBlueGhostsMode();
+        } else {
+            led.pacmanMode();
         }
     }
 
