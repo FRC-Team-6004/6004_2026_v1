@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import frc.robot.subsystems.*;
@@ -15,15 +16,25 @@ import frc.robot.Constants.IntakeConstants;
 public class AutoCommands {
 
     /** Shoot at hub using ShooterLookup, time-limited externally */
-    public static Command shootAuto(CommandSwerveDrivetrain drivetrain, Shooter shooter, StorageSub storage, Intake intake) {
+    public static Command shootAuto(CommandSwerveDrivetrain drivetrain, Shooter shooter, StorageSub storage, Intake intake, VisionSub vision) {
         ShooterLookup shootTable = new ShooterLookup();
-        return ShootCommands.createShootCommand(
+        return Commands.sequence( 
+            new Command() {
+            private final VisionSub v;
+            Timer t = new Timer();
+            { t.start(); this.v = vision;}
+            @Override public void initialize() { t.reset(); }
+            @Override public void execute() { v.addVisionMeasurement(drivetrain); }
+            @Override public void end(boolean i) { }
+            @Override public boolean isFinished() { return t.hasElapsed(1); }
+        }, 
+        ShootCommands.createShootCommand(
                 shooter,
                 storage,
                 intake,
                 shootTable.getRPM(getDistance(drivetrain)),
                 shootTable.getServo(getDistance(drivetrain))
-        ).withTimeout(5);
+        ).withTimeout(7));
     }
 
     /** Move intake arm out for a short duration */
