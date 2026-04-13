@@ -1,3 +1,4 @@
+
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
@@ -47,6 +48,8 @@ import frc.robot.util.NamedCommandManager;
 import frc.robot.util.ShotLUT;
 import frc.robot.commands.ShootCommands;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+
 import frc.robot.subsystems.leds;
 
 public class RobotContainer {
@@ -90,6 +93,8 @@ public class RobotContainer {
 
     private final ShiftTimer st = new ShiftTimer();
 
+    private final Field2d field;
+
     private final GridDistanceProcessing gdp = new GridDistanceProcessing(
         PathingConstants.map,
         PathingConstants.flowX,
@@ -102,12 +107,17 @@ public class RobotContainer {
 
     public RobotContainer() {
 
+        field = new Field2d();
+        SmartDashboard.putData("Feild", field);
+
+
         CommandScheduler.getInstance().registerSubsystem(drivetrain);
         CommandScheduler.getInstance().registerSubsystem(shooter);
         CommandScheduler.getInstance().registerSubsystem(storageSub);
         CommandScheduler.getInstance().registerSubsystem(intake);
+        CommandScheduler.getInstance().registerSubsystem(vision);
 
-        NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub, intake));
+        NamedCommands.registerCommand("AutoShoot", AutoCommands.shootAuto(drivetrain, shooter, storageSub, intake, vision));
         NamedCommands.registerCommand("intakeOut", AutoCommands.extendAuto(intake));
         NamedCommands.registerCommand("startIntake", AutoCommands.startIntake(intake));
         NamedCommands.registerCommand("stopIntake", AutoCommands.stopIntake(intake));
@@ -120,6 +130,8 @@ public class RobotContainer {
 
         Logger.recordOutput("/Field/Blue hub", visionConstants.hubPos);
         Logger.recordOutput("/Field/Red hub", visionConstants.redHubPos);
+
+
 
         configureBindings();
     }
@@ -177,6 +189,8 @@ public class RobotContainer {
 
     public void periodic() { 
 
+        field.setRobotPose(drivetrain.getPose());
+
         // storageSub.runFloor(0.2);
         // storageSub.runTop(0.2);
 
@@ -187,13 +201,13 @@ public class RobotContainer {
         // Vector from robot → target
         Translation2d toTarget = targetTranslation.minus(robotTranslation);
         double distance = robotTranslation.getDistance(targetTranslation);
-        Shooter.distance = distance * .96;
+        Shooter.distance = distance * 1;
         int mode = 1;
 
         //mode 1: slippery profile
         //mode default: reg
-        double normalMaxSpeed = 0.75;
-        double speedWhileIntaking = 0.3;
+        double normalMaxSpeed = 0.8;
+        double speedWhileIntaking = 0.65;
 
         switch(mode) {
             case 1 : 

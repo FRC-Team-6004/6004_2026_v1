@@ -13,6 +13,8 @@ import frc.robot.Constants.visionConstants;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class AutoCommands {
 
     /** Shoot at hub using ShooterLookup, time-limited externally */
@@ -26,7 +28,7 @@ public class AutoCommands {
             @Override public void initialize() { t.reset(); }
             @Override public void execute() { v.addVisionMeasurement(drivetrain); }
             @Override public void end(boolean i) { }
-            @Override public boolean isFinished() { return t.hasElapsed(1); }
+            @Override public boolean isFinished() { return t.hasElapsed(2.5); }
         }, 
         ShootCommands.createShootCommand(
                 shooter,
