@@ -63,41 +63,38 @@ public class ShooterReal implements ShooterIO {
 
         }
     }
-
-    private final EnumMap<ShooterSide, ShooterUnit> shooters =
+    private final EnumMap<ShooterSimUnit> shooters =
         new EnumMap<>(ShooterSide.class);
 
     public ShooterReal() {
         shooters.put(
-            ShooterSide.MAIN,
             new ShooterUnit(ShooterConstants.kLeftMotorID, ShooterConstants.kRightMotorID, ShooterConstants.kLeftServoPort, ShooterConstants.kRightServoPort)
         );
     }
 
     @Override
-    public void setTargetRPM(ShooterSide side, double rpm) {
-        shooters.get(side).targetRPM = rpm;
+    public void setTargetRPM(double rpm) {
+        shooters.get().targetRPM = rpm;
     }
 
     @Override
-    public double getRPM(ShooterSide side) {
-        return shooters.get(side).motor.getVelocity().getValueAsDouble() * 60.0;
+    public double getRPM() {
+        return shooters.get().motor.getVelocity().getValueAsDouble() * 60.0;
     }
 
     @Override
-    public void setServoAngle(ShooterSide side, double percent) {
-        shooters.get(side).servoPercent = percent;
+    public void setServoAngle(double percent) {
+        shooters.get().servoPercent = percent;
     }
 
     @Override
-    public void stop(ShooterSide side) {
-        ShooterUnit unit = shooters.get(side);
+    public void stop() {
+        ShooterUnit unit = shooters.get();
         unit.targetRPM = 0.0;
     }
 
     public void periodic() {
         for (ShooterUnit unit : shooters.values()) {
-
             if (unit.oldSP != unit.servoPercent) {
                 unit.oldSP = unit.servoPercent;
                 int servo = (int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;

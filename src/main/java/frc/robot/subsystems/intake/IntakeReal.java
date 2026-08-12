@@ -57,7 +57,6 @@ public class IntakeReal implements IntakeIO {
         pivotLeader        = new TalonFX(IntakeConstants.kLeftMotorID);
         pivotFollower      = new TalonFX(IntakeConstants.kRightMotorID);
         rollerMotor        = new TalonFX(IntakeConstants.kRollerMotorID);
-        rollerMotorOpposed = new TalonFX(IntakeConstants.kRollerMotor2ID);
 
         t.start();
 
@@ -111,10 +110,6 @@ public class IntakeReal implements IntakeIO {
         applyConfigWithRetry(pivotLeader, config);
         applyConfigWithRetry(pivotFollower, config);
         applyConfigWithRetry(rollerMotor, rollerConfig);
-        applyConfigWithRetry(rollerMotorOpposed, rollerConfig);
-
-        rollerMotorOpposed.setControl(new Follower(rollerMotor.getDeviceID(), MotorAlignmentValue.Opposed));
-
         
         pivotFollower.setControl(
             new Follower(

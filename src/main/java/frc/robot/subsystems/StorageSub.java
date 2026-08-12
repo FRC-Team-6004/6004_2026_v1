@@ -17,11 +17,11 @@ import frc.robot.Constants.StorageConstants;
 import frc.robot.util.LoggedTunableNumber;
 
 public class StorageSub extends SubsystemBase {
-    TalonFX topRoller;
+    TalonFX topRoller = new TalonFX(StorageConstants.GroundMotorID);
     SparkFlex floor;
 
     public StorageSub() {
-        topRoller = new TalonFX(StorageConstants.GroundMotorID);
+        // topRoller = new TalonFX(StorageConstants.GroundMotorID);
         floor = new SparkFlex(StorageConstants.RollerMotorID, MotorType.kBrushless);
         
         var motorConfig = new TalonFXConfiguration();

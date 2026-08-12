@@ -20,24 +20,24 @@ public class Shooter extends SubsystemBase {
 
     }
 
-    public void setRPM(ShooterSide side, double rpm) {
-        io.setTargetRPM(side, rpm);
+    public void setRPM(double rpm) {
+        io.setTargetRPM(rpm);
     }
 
-    public void stop(ShooterSide side) {
-        io.stop(side);
+    public void stop() {
+        io.stop();
     }
 
     public void stopAll() {
         io.stopAll();
     }
 
-    public double getRPM(ShooterSide side) {
-        return io.getRPM(side);
+    public double getRPM() {
+        return io.getRPM();
     }
 
-    public void setServoAngle(ShooterSide side, double percent) {
-        io.setServoAngle(side, percent);
+    public void setServoAngle(double percent) {
+        io.setServoAngle(percent);
     }
 
     int cycler = 0;
@@ -51,20 +51,15 @@ public class Shooter extends SubsystemBase {
         }
         
         // if (cycler == 10) {
-        //     cycler = 0;
-        //     setServoAngle(ShooterSide.MAIN, servoAngle.get());
-        
-        //     double mainRPM0 = rpm.get();
-        //     setRPM(ShooterSide.MAIN, mainRPM0);
+        //     cycler = 0; 
+        //     setServoAngle(servoAngle.get());
+        //     setRPM(rpm.get());
         // }
 
 
         // cycler++;
 
-        
-        double mainRPM = getRPM(ShooterSide.MAIN);
-
-        Logger.recordOutput("/Shooter/RPM", -mainRPM);
+        Logger.recordOutput("/Shooter/RPM", -getRPM());
         Logger.recordOutput("/Shooter/Distance", distance);
 
     }

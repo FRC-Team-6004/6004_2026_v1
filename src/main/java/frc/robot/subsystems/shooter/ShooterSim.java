@@ -35,33 +35,32 @@ public class ShooterSim implements ShooterIO {
             ShooterConstants.kA
         );
 
-    private final EnumMap<ShooterSide, ShooterSimUnit> shooters =
-        new EnumMap<>(ShooterSide.class);
+
 
     public ShooterSim() {
-        shooters.put(ShooterSide.MAIN, new ShooterSimUnit());
+        shooters.put(new ShooterSimUnit());
     }
 
     @Override
-    public void setTargetRPM(ShooterSide side, double rpm) {
-        shooters.get(side).targetRPM = rpm;
+    public void setTargetRPM(double rpm) {
+        shooters.get().targetRPM = rpm;
     }
 
     @Override
-    public double getRPM(ShooterSide side) {
+    public double getRPM() {
         return Units.radiansPerSecondToRotationsPerMinute(
-            shooters.get(side).sim.getAngularVelocityRadPerSec()
+            shooters.get().sim.getAngularVelocityRadPerSec()
         );
     }
 
     @Override
-    public void setServoAngle(ShooterSide side, double percent) {
-        shooters.get(side).servoPercent = percent;
+    public void setServoAngle(double percent) {
+        shooters.get().servoPercent = percent;
     }
 
     @Override
-    public void stop(ShooterSide side) {
-        ShooterSimUnit unit = shooters.get(side);
+    public void stop() {
+        ShooterSimUnit unit = shooters.get();
         unit.targetRPM = 0.0;
         unit.sim.setInputVoltage(0.0);
     }
