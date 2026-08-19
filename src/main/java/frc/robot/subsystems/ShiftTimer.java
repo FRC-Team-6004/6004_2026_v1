@@ -14,6 +14,23 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  */
 public class ShiftTimer extends SubsystemBase {
 
+    //figure out how to slow down this it works on practice but bricks during comp
+    /* ⠀⠀⠀⠀⠀⠀ ⣠⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣻⢷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⡿⣯⣷⣟⣯⣷⣥⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣠⣾⢯⣟⣷⣟⣾⣻⢾⣽⡾⣦⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣀⣾⡿⣽⣻⣟⣾⣽⣳⡿⣯⣷⢿⣯⢷⣄⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢀⣼⡿⣽⣻⣽⢷⣯⣟⣾⢯⣟⣷⣯⢿⣾⣻⣽⡵⡄⠀⠀⠀⠀
+⠀⠀⣰⡿⣯⢿⣽⣻⢾⣯⡷⣿⣽⣻⣟⣾⡽⣟⣾⡽⣷⢿⣻⣦⡀⠀⠀
+⣠⣾⢿⣽⣟⣯⡿⣽⣟⣾⣽⡷⣯⣷⢿⣽⣻⢯⣿⡽⣯⣿⣻⣞⣯⡦⠀
+⠉⠉⠉⠉⠉⠉⠉⣿⣾⣻⢾⣽⡷⣯⣿⣞⡿⣯⣷⡍⠉⠉⠉⠉⠉⠉⠁
+ ⠀⠀⠀⠀⠀⠀⠀⣿⣷⣻⣯⡷⣿⣻⢾⣽⣻⣽⢿⠁⠀⠀⠀⠀⠀⠀⠀
+ ⠀⠀⠀⠀⠀⠀⠀⣿⡾⣷⢯⣿⣳⡿⣯⢿⣽⡾⣿⠀⠀⠀⠀⠀⠀⠀⠀
+ ⠀⠀⠀⠀⠀⠀⠀⣿⣽⢯⣿⣳⡿⣽⣻⣯⡷⣿⣻⡅⠀⠀⠀⠀⠀⠀⠀
+ ⠀⠀⠀⠀⠀⠀⠀⣿⣯⢿⣳⡿⣽⣟⡷⣯⢿⡷⣿⠀⠀⠀⠀⠀⠀⠀⠀
+ ⠀⠀⠀⠀⠀⠀⠀⣿⣽⣻⣯⣟⣿⣞⣿⣽⣿⣽⣿⠄⠀⠀⠀⠀⠀⠀⠀
+    */
+
     // // NetworkTables entries
     // private final NetworkTable table;
     // private final NetworkTableEntry secondsUntilNextShiftEntry;

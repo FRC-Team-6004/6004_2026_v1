@@ -13,7 +13,7 @@ public class Shooter extends SubsystemBase {
     public static double distance = 0;
 
     private LoggedTunableNumber rpm = new LoggedTunableNumber("Shooter/rpm", 0);
-    private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
+    // private LoggedTunableNumber servoAngle = new LoggedTunableNumber("Shooter/servoAngle", 0);
     
     public Shooter() {
         io = RobotBase.isReal() ? new ShooterReal() : new ShooterSim();
@@ -28,17 +28,13 @@ public class Shooter extends SubsystemBase {
         io.stop();
     }
 
-    public void stopAll() {
-        io.stopAll();
-    }
-
     public double getRPM() {
         return io.getRPM();
     }
 
-    public void setServoAngle(double percent) {
-        io.setServoAngle(percent);
-    }
+    // public void setServoAngle(double percent) {
+    //     io.setServoAngle(percent);
+    // }
 
     int cycler = 0;
 

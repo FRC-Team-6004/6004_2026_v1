@@ -7,14 +7,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShooterLookup;
 import frc.robot.Constants.visionConstants;
@@ -74,8 +71,8 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(omega)
         );
-        shooter.setRPM(ShooterSide.MAIN, Math.abs(shootTable.getRPM(Math.abs(Shooter.distance))));
-        shooter.setServoAngle(ShooterSide.MAIN, Math.abs(shootTable.getServo(Math.abs(Shooter.distance))));
+        shooter.setRPM(Math.abs(shootTable.getRPM(Math.abs(Shooter.distance))));
+        // shooter.setServoAngle(Math.abs(shootTable.getServo(Math.abs(Shooter.distance))));
         shooterCommand.execute();
         
     }

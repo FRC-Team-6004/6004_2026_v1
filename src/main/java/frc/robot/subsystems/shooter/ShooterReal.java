@@ -8,114 +8,88 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 
-import edu.wpi.first.wpilibj.Servo;
+// import edu.wpi.first.wpilibj.Servo;
 import frc.robot.Constants.ShooterConstants;
-
-import com.ctre.phoenix6.controls.RainbowAnimation;
-
-
-import java.util.EnumMap;
 
 public class ShooterReal implements ShooterIO {
 
-    private static class ShooterUnit {
-        final TalonFX motor;
-        final TalonFX followerMotor;
-        final VelocityTorqueCurrentFOC VTC = new VelocityTorqueCurrentFOC(0)
-            .withAcceleration(10)
-            .withFeedForward(2)
-            .withSlot(0);
+    private final TalonFX motor;
+    private final TalonFX followerMotor;
+    private final VelocityTorqueCurrentFOC VTC = new VelocityTorqueCurrentFOC(0)
+        .withAcceleration(10)
+        .withFeedForward(2)
+        .withSlot(0);
 
-        
-        final Servo hood;
-        final Servo hood2;
+    // private final Servo hood;
+    // private final Servo hood2;
 
-        double oldSP = 0.0;
-        double oldTRPM = 0.0;
-        double servoPercent = 0.0;
-        double targetRPM = 0.0;
-
-        ShooterUnit(int motorID, int followerID, int servoChannel, int servoTwo) {
-
-            var motorConfig = new TalonFXConfiguration();
-
-            motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-            motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
-            motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-            motorConfig.CurrentLimits.StatorCurrentLimit = 120;
-            motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-            motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-            motorConfig.Slot0.kP = 10;
-            motorConfig.Audio.AllowMusicDurDisable = true;
-
-            motor = new TalonFX(motorID);
-
-            followerMotor = new TalonFX(followerID);
-
-            motor.getConfigurator().apply(motorConfig);
-            followerMotor.getConfigurator().apply(motorConfig);
-
-            followerMotor.setControl(new Follower(motorID, MotorAlignmentValue.Opposed));
-
-            hood = new Servo(servoChannel);
-            hood2 = new Servo(servoTwo);
-            
-
-        }
-    }
-    private final EnumMap<ShooterSimUnit> shooters =
-        new EnumMap<>(ShooterSide.class);
+    // private double oldSP = 0.0;
+    private double oldTRPM = 0.0;
+    // private double servoPercent = 0.0;
+    private double targetRPM = 0.0;
 
     public ShooterReal() {
-        shooters.put(
-            new ShooterUnit(ShooterConstants.kLeftMotorID, ShooterConstants.kRightMotorID, ShooterConstants.kLeftServoPort, ShooterConstants.kRightServoPort)
-        );
+        var motorConfig = new TalonFXConfiguration();
+
+        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
+        motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        motorConfig.CurrentLimits.StatorCurrentLimit = 120;
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        motorConfig.Slot0.kP = 10;
+        motorConfig.Audio.AllowMusicDurDisable = true;
+
+        motor = new TalonFX(ShooterConstants.kLeftMotorID);
+        followerMotor = new TalonFX(ShooterConstants.kRightMotorID);
+
+        motor.getConfigurator().apply(motorConfig);
+        followerMotor.getConfigurator().apply(motorConfig);
+
+        followerMotor.setControl(new Follower(ShooterConstants.kLeftMotorID, MotorAlignmentValue.Opposed));
+
+        // hood = new Servo(ShooterConstants.kLeftServoPort);
+        // hood2 = new Servo(ShooterConstants.kRightServoPort);
     }
 
     @Override
     public void setTargetRPM(double rpm) {
-        shooters.get().targetRPM = rpm;
+        this.targetRPM = rpm;
     }
 
     @Override
     public double getRPM() {
-        return shooters.get().motor.getVelocity().getValueAsDouble() * 60.0;
+        return motor.getVelocity().getValueAsDouble() * 60.0;
     }
 
-    @Override
-    public void setServoAngle(double percent) {
-        shooters.get().servoPercent = percent;
-    }
+    // @Override
+    // public void setServoAngle(double percent) {
+    //     this.servoPercent = percent;
+    // }
 
     @Override
     public void stop() {
-        ShooterUnit unit = shooters.get();
-        unit.targetRPM = 0.0;
+        this.targetRPM = 0.0;
     }
 
     public void periodic() {
-        for (ShooterUnit unit : shooters.values()) {
-            if (unit.oldSP != unit.servoPercent) {
-                unit.oldSP = unit.servoPercent;
-                int servo = (int) (unit.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
-                servo = Math.max(Math.min(servo, ShooterConstants.servoOut), ShooterConstants.servoIn);
-                unit.hood.setPulseTimeMicroseconds(servo);
-                unit.hood2.setPulseTimeMicroseconds(servo);
-            }
+        // if (this.oldSP != this.servoPercent) {
+        //     this.oldSP = this.servoPercent;
+        //     int servo = (int) (this.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
+        //     servo = Math.max(Math.min(servo, ShooterConstants.servoOut), ShooterConstants.servoIn);
+        //     this.hood.setPulseTimeMicroseconds(servo);
+        //     this.hood2.setPulseTimeMicroseconds(servo);
+        // }
 
-            if (unit.oldTRPM != unit.targetRPM) {
-                unit.oldTRPM = unit.targetRPM;
-                if (unit.targetRPM == 0.0) {
-                    unit.motor.stopMotor();
-                    continue;
-                } 
+        if (this.oldTRPM != this.targetRPM) {
+            this.oldTRPM = this.targetRPM;
+            if (this.targetRPM == 0.0) {
+                motor.stopMotor();
+                return;
+            } 
 
-                unit.motor.setControl(
-                    unit.VTC.withVelocity(unit.targetRPM / 60)
-                );
-            }
-
-
+            motor.setControl(
+                VTC.withVelocity(this.targetRPM / 60.0)
+            );
         }
     }
 }

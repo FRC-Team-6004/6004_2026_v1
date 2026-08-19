@@ -3,7 +3,6 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterSide;
 
 public class shooterUnjam extends Command {
 
@@ -21,12 +20,12 @@ public class shooterUnjam extends Command {
 
     @Override
     public void execute() {
-        shooter.setRPM(ShooterSide.MAIN, -2000);
+        shooter.setRPM(-2000);
     }
 
     @Override
     public void end(boolean interrupted) {
-        shooter.setRPM(ShooterSide.MAIN, 0);
+        shooter.setRPM(0);
     }
 
     @Override

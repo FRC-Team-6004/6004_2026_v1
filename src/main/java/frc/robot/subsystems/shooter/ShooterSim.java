@@ -7,26 +7,22 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import frc.robot.Constants.ShooterConstants;
 
-import java.util.EnumMap;
-
 public class ShooterSim implements ShooterIO {
 
-    private static class ShooterSimUnit {
-        double targetRPM = 0.0;
-        double oldTRPM = 0.0;
+    private double targetRPM = 0.0;
+    private double oldTRPM = 0.0;
 
-        double servoPercent = 0.0;
-        double oldSP = 0.0;
+    // private double servoPercent = 0.0;
+    // private double oldSP = 0.0;
 
-        FlywheelSim sim = new FlywheelSim(
-            LinearSystemId.createFlywheelSystem(
-                DCMotor.getKrakenX60Foc(1),
-                1.0,
-                ShooterConstants.kMOI
-            ),
-            DCMotor.getKrakenX60Foc(1)
-        );
-    }
+    private final FlywheelSim sim = new FlywheelSim(
+        LinearSystemId.createFlywheelSystem(
+            DCMotor.getKrakenX60Foc(1),
+            1.0,
+            ShooterConstants.kMOI
+        ),
+        DCMotor.getKrakenX60Foc(1)
+    );
 
     private final SimpleMotorFeedforward feedforward =
         new SimpleMotorFeedforward(
@@ -35,65 +31,54 @@ public class ShooterSim implements ShooterIO {
             ShooterConstants.kA
         );
 
-
-
     public ShooterSim() {
-        shooters.put(new ShooterSimUnit());
     }
 
     @Override
     public void setTargetRPM(double rpm) {
-        shooters.get().targetRPM = rpm;
+        this.targetRPM = rpm;
     }
 
     @Override
     public double getRPM() {
         return Units.radiansPerSecondToRotationsPerMinute(
-            shooters.get().sim.getAngularVelocityRadPerSec()
+            sim.getAngularVelocityRadPerSec()
         );
     }
 
-    @Override
-    public void setServoAngle(double percent) {
-        shooters.get().servoPercent = percent;
-    }
+    // @Override
+    // public void setServoAngle(double percent) {
+    //     this.servoPercent = percent;
+    // }
 
     @Override
     public void stop() {
-        ShooterSimUnit unit = shooters.get();
-        unit.targetRPM = 0.0;
-        unit.sim.setInputVoltage(0.0);
+        this.targetRPM = 0.0;
+        sim.setInputVoltage(0.0);
     }
 
-    /** Call from Shooter subsystem periodic() */
     public void periodic() {
-        for (ShooterSimUnit unit : shooters.values()) {
+        // if (this.oldSP != this.servoPercent) {
+        //     this.oldSP = this.servoPercent;
+        // }
 
-            // Mirror servo "update only on change"
-            if (unit.oldSP != unit.servoPercent) {
-                unit.oldSP = unit.servoPercent;
-                // No physical servo in sim, just store value
+        if (this.oldTRPM != this.targetRPM) {
+            this.oldTRPM = this.targetRPM;
+
+            if (this.targetRPM <= 0.0) {
+                sim.setInputVoltage(0.0);
+            } else {
+                double targetRadPerSec =
+                    Units.rotationsPerMinuteToRadiansPerSecond(this.targetRPM);
+
+                double ffVolts = feedforward.calculate(targetRadPerSec);
+
+                sim.setInputVoltage(
+                    Math.max(-12.0, Math.min(12.0, ffVolts))
+                );
             }
-
-            // Mirror real "only update motor when target changes"
-            if (unit.oldTRPM != unit.targetRPM) {
-                unit.oldTRPM = unit.targetRPM;
-
-                if (unit.targetRPM <= 0.0) {
-                    unit.sim.setInputVoltage(0.0);
-                } else {
-                    double targetRadPerSec =
-                        Units.rotationsPerMinuteToRadiansPerSecond(unit.targetRPM);
-
-                    double ffVolts = feedforward.calculate(targetRadPerSec);
-
-                    unit.sim.setInputVoltage(
-                        Math.max(-12.0, Math.min(12.0, ffVolts))
-                    );
-                }
-            }
-
-            unit.sim.update(0.02);
         }
+
+        sim.update(0.02);
     }
 }

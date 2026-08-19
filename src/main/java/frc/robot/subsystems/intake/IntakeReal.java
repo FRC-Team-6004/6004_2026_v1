@@ -8,17 +8,13 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
@@ -34,17 +30,14 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
  */
 public class IntakeReal implements IntakeIO {
 
-    /* ---------------- Motors ---------------- */
+    //Motors
     private final TalonFX pivotLeader;
     private final TalonFX pivotFollower;
     private final TalonFX rollerMotor;
-    private final TalonFX rollerMotorOpposed;
 
 
-    /* ---------------- Controls ---------------- */
+    //Controls
     private final NeutralOut m_brake = new NeutralOut();
-    private final PositionVoltage m_positionVoltage =
-        new PositionVoltage(0).withSlot(0);
 
     private double targetPos = 0.0;
 

@@ -1,13 +1,10 @@
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.Constants.IntakeConstants;
 
@@ -31,8 +28,8 @@ public class ShootCommands {
                 timer.reset();
                 timer.start();
 
-                shooter.setRPM(ShooterSide.MAIN, rpm);
-                shooter.setServoAngle(ShooterSide.MAIN, rpm);
+                shooter.setRPM(rpm);
+                // shooter.setServoAngle(rpm);
             }
 
             @Override
@@ -49,8 +46,8 @@ public class ShootCommands {
 
             @Override
             public void end(boolean interrupted) {
-                shooter.setRPM(ShooterSide.MAIN, 0);
-                shooter.setServoAngle(ShooterSide.MAIN, 0);
+                shooter.setRPM(0);
+                // shooter.setServoAngle(0);
 
                 storage.runFloor(0);
                 storage.runTop(0);
@@ -61,7 +58,7 @@ public class ShootCommands {
 
             @Override
             public boolean isFinished() {
-                return false; // use withTimeout externally
+                return false; 
             }
 
 

@@ -7,11 +7,6 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -26,12 +21,9 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import java.util.Optional;
 
 import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
-import org.ironmaple.simulation.drivesims.COTS;
 
 import com.ctre.phoenix6.Orchestra;
-import com.ctre.phoenix6.configs.AudioConfigs;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 
 public class Robot extends LoggedRobot {
