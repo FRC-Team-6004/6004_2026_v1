@@ -10,7 +10,7 @@ public interface ShooterIO {
     double getRPM();
 
     /** Get current speed for one shooter (RPM) */
-    void setServoAngle(double percent);
+    // void setServoAngle(double percent);
 
 
     /** Stop one shooter */

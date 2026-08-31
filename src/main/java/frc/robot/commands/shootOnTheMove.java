@@ -11,7 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterSide;
+// import frc.robot.subsystems.shooter.ShooterSide;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShotCalc;
 import frc.robot.util.ShotLUT;
@@ -115,10 +115,10 @@ public class shootOnTheMove extends Command {
 
         if (params.isValid() && params.confidence() > 50) {
 
-            shooterSub.setRPM(ShooterSide.MAIN, params.rpm());
+            shooterSub.setRPM(params.rpm());
 
             double hoodAngle = shotLUT.getAngle(params.solvedDistanceM());
-            shooterSub.setServoAngle(ShooterSide.MAIN, hoodAngle);
+            // shooterSub.setServoAngle(hoodAngle);
 
 
             // Predict robot motion during latency
@@ -176,7 +176,7 @@ public class shootOnTheMove extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(0)
         );
-        shooterSub.setRPM(ShooterSide.MAIN, 0);
+        shooterSub.setRPM(0);
         storageSub.runFloor(0);
         storageSub.runTop(0);
         intakeSub.runRollers(0);
