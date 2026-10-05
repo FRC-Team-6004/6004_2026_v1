@@ -165,6 +165,7 @@ public static int MAP_WIDTH = 32;
       public static final int kLeftMotorID = 24;
       public static final int kRightMotorID = 20;
       public static final int kRollerMotorID = 23;
+      public static final int kRollerMotorFollowerID = 27;
 
       public static final double PIDout = -6;
       public static final double PIDin = 0.0;

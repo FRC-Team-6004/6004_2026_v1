@@ -13,6 +13,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.VisionSub;
 import frc.robot.util.ShooterLookup;
 import frc.robot.Constants.visionConstants;
 
@@ -32,7 +33,8 @@ public class ShootAtHub extends Command {
         CommandSwerveDrivetrain drivetrain,
         Shooter shooterSub,
         StorageSub storage,
-        Intake intake
+        Intake intake,
+        VisionSub vision
     ) {
         this.shooter = shooterSub;
         this.swerve = drivetrain;
@@ -49,16 +51,20 @@ public class ShootAtHub extends Command {
             servo
         );
 
-        addRequirements(drivetrain, shooterSub, storage, intake);
+        addRequirements(drivetrain, shooterSub, storage, intake, vision);
     }
 
     @Override
     public void initialize() {
+        vision.addVisionMeasurement(drivetrain);
         shooterCommand.initialize();
+
     }
 
     @Override
     public void execute() {
+        vision.addVisionMeasurement(drivetrain);
+
         Pose2d currentPose = swerve.getState().Pose;
         Pose2d targetPose = isRed(currentPose) ? visionConstants.redHubPos : visionConstants.hubPos;
 
