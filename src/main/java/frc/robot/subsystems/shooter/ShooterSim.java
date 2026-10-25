@@ -16,10 +16,14 @@ public class ShooterSim implements ShooterIO {
     // Do NOT use ShooterConstants.kV (0.39) here: as a SimpleMotorFeedforward in
     // rad/s it demands 100+ V and saturates at 12 V, so the wheel runs away to free
     // speed and the 200 RPM at-speed gate never opens in sim. Likewise kMOI = 12 is
-    // not a physical flywheel inertia (a real shooter wheel is ~0.001-0.01 kg m^2);
-    // with 12 the wheel would take minutes to spin up.
+    // not a physical flywheel inertia; with 12 the wheel would take minutes to spin up.
+    // MOI estimate from the real shooter (1:1 Kraken, nine 4 in. AndyMark wheels each
+    // with a steel flywheel weight inside): each weight is ~3.4e-4 kg m^2 and each
+    // wheel ~2e-4, so 9 x ~5.4e-4 = ~0.005 kg m^2. Correct this if the weight count
+    // or part differs; spin-up time scales with it, but the at-speed gate is
+    // unaffected anywhere near this value.
     private static final double FREE_SPEED_RPM = 6000.0;
-    private static final double SIM_MOI_KG_M2 = 0.002;
+    private static final double SIM_MOI_KG_M2 = 0.005;
     private static final double KP_VOLTS_PER_RAD_PER_SEC = 0.05;
 
     private double targetRPM = 0.0;

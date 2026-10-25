@@ -289,9 +289,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private void startSimThread() {
         mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
                 Seconds.of(kSimLoopPeriod),
-                Pounds.of(115),
-                Inches.of(30),
-                Inches.of(30),
+                Pounds.of(115), // weight with bumpers, still assumed: confirm
+                // Bumper OUTER size, not chassis: chassis is 28x28 and standard bumpers
+                // add ~3 in. per side, so ~34x34. Correct if bumper thickness differs.
+                Inches.of(34),
+                Inches.of(34),
                 DCMotor.getKrakenX60Foc(1),
                 DCMotor.getKrakenX44Foc(1),
                 1.2,
