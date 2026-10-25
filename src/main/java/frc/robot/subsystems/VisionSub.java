@@ -3,6 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.estimator.PoseEstimator3d;
@@ -146,38 +148,47 @@ public class VisionSub extends SubsystemBase {
 
     /* -------- Swerve Pose Estimator Integration -------- */
 
+    /**
+     * Single-tag estimates can be ambiguous (two possible poses for one tag). Reject poor ones;
+     * multi-tag estimates are geometrically unambiguous, so they are always accepted. Tune this
+     * if vision stops contributing (too strict) or the pose ever jumps (too loose).
+     */
+    private static final double SINGLE_TAG_MAX_AMBIGUITY = 0.2;
+
+    /**
+     * Fuses all three cameras into the drivetrain pose estimator for full-field localization:
+     * the forward hub camera plus the two rear swerve cameras. Each camera's latest estimate is
+     * an independent measurement, so the estimator fuses all of them rather than picking one.
+     * Called every robot loop from RobotContainer.periodic(), so this runs in teleop too.
+     */
     public void addVisionMeasurement(CommandSwerveDrivetrain drivetrain) {
+        addEstimateIfValid(drivetrain, "HubFwd", getEstimate(hubFwdCam, hubFwdEstimator));
+        addEstimateIfValid(drivetrain, "BLSwerve", getEstimate(BLSwerve, BLSwerveEstimator));
+        addEstimateIfValid(drivetrain, "BRSwerve", getEstimate(BRSwerve, BRSwerveEstimator));
+    }
 
-        Optional<EstimatedRobotPose> estimate = getEstimate(hubFwdCam, hubFwdEstimator);
-            if (!estimate.isEmpty()) {
-                EstimatedRobotPose visionPose = estimate.get();
-                drivetrain.addVisionMeasurement(
-                    visionPose.estimatedPose.toPose2d(),
-                    visionPose.timestampSeconds
-                );
+    private void addEstimateIfValid(
+            CommandSwerveDrivetrain drivetrain, String cameraName, Optional<EstimatedRobotPose> estimate) {
+        if (estimate.isEmpty()) {
+            return;
+        }
+
+        EstimatedRobotPose visionPose = estimate.get();
+
+        if (visionPose.targetsUsed.size() == 1) {
+            double ambiguity = visionPose.targetsUsed.get(0).getPoseAmbiguity();
+            if (ambiguity > SINGLE_TAG_MAX_AMBIGUITY) {
+                Logger.recordOutput("Vision/" + cameraName + "/RejectedAmbiguity", ambiguity);
+                return;
             }
+        }
 
-        
-        // estimate = getEstimate(BLSwerve, BLSwerveEstimator);
-        //     if (!estimate.isEmpty()) {
-        //         EstimatedRobotPose visionPose = estimate.get();
-        //         drivetrain.addVisionMeasurement(
-        //             visionPose.estimatedPose.toPose2d(),
-        //             visionPose.timestampSeconds
-        //         );
-        //     }
-
-
-        
-        // estimate = getEstimate(BRSwerve, BRSwerveEstimator);
-        //     if (!estimate.isEmpty()) {
-        //         EstimatedRobotPose visionPose = estimate.get();
-        //         drivetrain.addVisionMeasurement(
-        //             visionPose.estimatedPose.toPose2d(),
-        //             visionPose.timestampSeconds
-        //         );
-        //     }
-
+        drivetrain.addVisionMeasurement(
+            visionPose.estimatedPose.toPose2d(),
+            visionPose.timestampSeconds
+        );
+        Logger.recordOutput("Vision/" + cameraName + "/Pose", visionPose.estimatedPose.toPose2d());
+        Logger.recordOutput("Vision/" + cameraName + "/TargetsUsed", (double) visionPose.targetsUsed.size());
     }
 
     @Override
