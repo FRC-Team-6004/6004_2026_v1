@@ -20,6 +20,8 @@ import frc.robot.util.AllianceUtil;
 public class ShootAtHub extends Command {
 
     private final CommandSwerveDrivetrain swerve;
+    private final CommandSwerveDrivetrain drivetrain;
+    private final VisionSub vision;
     private final SwerveRequest.FieldCentric drive =
         new SwerveRequest.FieldCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
@@ -36,6 +38,8 @@ public class ShootAtHub extends Command {
         VisionSub vision
     ) {
         this.swerve = drivetrain;
+        this.drivetrain = drivetrain;
+        this.vision = vision;
         this.shootTable = new ShooterLookup();
 
         // RPM is supplied live (see ShootCommands): it must NOT be snapshotted here, because this

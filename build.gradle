@@ -111,4 +111,7 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+    // Sources are UTF-8 (e.g. the braille art comment in ShiftTimer). Without this,
+    // javac on Windows defaults to windows-1252 and fails on those characters.
+    options.encoding = 'UTF-8'
 }
