@@ -15,7 +15,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.VisionSub;
 import frc.robot.util.ShooterLookup;
-import frc.robot.Constants.visionConstants;
+import frc.robot.util.AllianceUtil;
 
 public class ShootAtHub extends Command {
 
@@ -27,7 +27,6 @@ public class ShootAtHub extends Command {
 
     private final Command shooterCommand;
     private final ShooterLookup shootTable;
-    private final Shooter shooter;
 
     public ShootAtHub(
         CommandSwerveDrivetrain drivetrain,
@@ -36,19 +35,17 @@ public class ShootAtHub extends Command {
         Intake intake,
         VisionSub vision
     ) {
-        this.shooter = shooterSub;
         this.swerve = drivetrain;
         this.shootTable = new ShooterLookup();
 
-        double RPM = Math.abs(shootTable.getRPM(Math.abs(Shooter.distance)));
-        double servo = shootTable.getServo(Math.abs(Shooter.distance));
-
+        // RPM is supplied live (see ShootCommands): it must NOT be snapshotted here, because this
+        // command object is constructed once when bindings are created, long before it runs.
+        // Shooter.distance is refreshed every robot loop from the live pose (RobotContainer.periodic).
         this.shooterCommand = ShootCommands.createShootCommand(
             shooterSub,
             storage,
             intake,
-            RPM,
-            servo
+            () -> Math.abs(shootTable.getRPM(Math.abs(Shooter.distance)))
         );
 
         addRequirements(drivetrain, shooterSub, storage, intake, vision);
@@ -66,7 +63,7 @@ public class ShootAtHub extends Command {
         vision.addVisionMeasurement(drivetrain);
 
         Pose2d currentPose = swerve.getState().Pose;
-        Pose2d targetPose = isRed(currentPose) ? visionConstants.redHubPos : visionConstants.hubPos;
+        Pose2d targetPose = AllianceUtil.getHubPose();
 
         Translation2d toTarget = targetPose.getTranslation().minus(currentPose.getTranslation());
         double headingError = toTarget.getAngle().minus(currentPose.getRotation()).getRadians();
@@ -77,8 +74,7 @@ public class ShootAtHub extends Command {
                  .withVelocityY(0)
                  .withRotationalRate(omega)
         );
-        shooter.setRPM(Math.abs(shootTable.getRPM(Math.abs(Shooter.distance))));
-        // shooter.setServoAngle(Math.abs(shootTable.getServo(Math.abs(Shooter.distance))));
+        // Flywheel RPM is set live by shooterCommand.execute() from the same live distance.
         shooterCommand.execute();
         
     }
@@ -96,9 +92,5 @@ public class ShootAtHub extends Command {
     @Override
     public boolean isFinished() {
         return false;
-    }
-
-    private boolean isRed(Pose2d pose) {
-        return pose.getX() > 8.25;
     }
 }

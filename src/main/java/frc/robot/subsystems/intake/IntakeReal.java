@@ -42,6 +42,9 @@ public class IntakeReal implements IntakeIO {
 
     private double targetPos = 0.0;
 
+    /** While true, the POV jog owns the arm and periodic() must not fight it with MotionMagic. */
+    private boolean jogActive = false;
+
     private Timer t = new Timer();
 
     private final MotionMagicExpoVoltage m_motionMagic = new MotionMagicExpoVoltage(0).withSlot(0);
@@ -106,6 +109,8 @@ public class IntakeReal implements IntakeIO {
         applyConfigWithRetry(pivotLeader, config);
         applyConfigWithRetry(pivotFollower, config);
         applyConfigWithRetry(rollerMotor, rollerConfig);
+        // Was missing: the roller follower ran on factory defaults (no current limit, coast).
+        applyConfigWithRetry(rollerMotorFollower, rollerConfig);
         
         pivotFollower.setControl(
             new Follower(
@@ -141,16 +146,24 @@ public class IntakeReal implements IntakeIO {
     }
 
     private void moveArm(double speed) {
-        pivotLeader.set(speed *.1);
+        if (speed == 0) {
+            // Jog released: park the position target where the arm actually is, so the
+            // position loop doesn't drag the arm back to the old target afterwards.
+            jogActive = false;
+            targetPos = getAngle();
+            pivotLeader.set(0);
+        } else {
+            jogActive = true;
+            pivotLeader.set(speed *.1);
+        }
     }
 
     @Override
     public void periodic() {
         double actualPos = targetPos;
-        // if (RobotContainer.bounceIntake) {
-        //     actualPos = (targetPos + Math.sin(t.get() * 10) * 0.25) + 0.1;
-        // }
-        if (Math.abs(getAngle() - targetPos) > 0.05) {
+        // Skip the position loop while jogging: it used to re-send MotionMagic every loop and
+        // override the open-loop jog, so POV left/right barely moved the arm.
+        if (!jogActive && Math.abs(getAngle() - targetPos) > 0.05) {
             setArmControl(Math.min(actualPos, 0));
         }
         Logger.recordOutput("/intake/arm position", getAngle());
@@ -172,8 +185,8 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void runRollers(double speed) {
-        rollerMotor.set(speed);
-        // rollerMotor.setControl(new TorqueCurrentFOC(speed));
+        // Duty cycle in [-1, 1]; callers pass volt-scale values, clamp like the sim does.
+        rollerMotor.set(MathUtil.clamp(speed, -1.0, 1.0));
     }
 
     @Override

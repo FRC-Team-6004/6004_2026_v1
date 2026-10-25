@@ -9,7 +9,6 @@ import frc.robot.subsystems.*;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShooterLookup;
-import frc.robot.Constants.visionConstants;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 
@@ -34,8 +33,9 @@ public class AutoCommands {
                 shooter,
                 storage,
                 intake,
-                shootTable.getRPM(getDistance(drivetrain)),
-                shootTable.getServo(getDistance(drivetrain))
+                // Evaluated live when the shoot command starts (and every loop after),
+                // NOT at auto-construction time: the robot has driven a path by then.
+                () -> shootTable.getRPM(getDistance(drivetrain))
         ).withTimeout(7));
     }
 
@@ -58,19 +58,15 @@ public class AutoCommands {
     public static Command stopIntake(Intake intake) {
         return new InstantCommand(() -> {
             intake.runRollers(0);
-            RobotContainer.bounceIntake = true;
+            // Was `= true` (copy-paste from startIntake): the intaking drive-speed cap never cleared after autos.
+            RobotContainer.bounceIntake = false;
         }, intake);
     }
 
     /** Helper to calculate distance to hub */
     private static double getDistance(CommandSwerveDrivetrain drivetrain) {
         Pose2d currentPose = drivetrain.getState().Pose;
-        Pose2d targetPose = isRed(drivetrain) ? visionConstants.redHubPos : visionConstants.hubPos;
+        Pose2d targetPose = frc.robot.util.AllianceUtil.getHubPose();
         return currentPose.getTranslation().getDistance(targetPose.getTranslation());
-    }
-
-    /** Determine alliance side based on position */
-    private static boolean isRed(CommandSwerveDrivetrain drivetrain) {
-        return drivetrain.getState().Pose.getX() > 8.25;
     }
 }

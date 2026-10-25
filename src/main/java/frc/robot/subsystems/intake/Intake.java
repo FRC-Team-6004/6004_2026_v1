@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
 
@@ -52,12 +53,17 @@ public class Intake extends SubsystemBase {
         io.setBrake();
     }
 
+    /**
+     * Set the arm angle in mechanism radians. The real IO works in motor rotations (MotionMagic),
+     * so convert: motor rotations = angle (rev) * gearing. The old code stored radians as if they
+     * were rotations, and positive targets were then clamped to 0 by the real periodic loop.
+     */
     public void setArmPositionRad(double angleRad) {
-        io.setArmPosition(angleRad);
+        io.setArmPosition(angleRad / (2.0 * Math.PI) * IntakeConstants.kGearing);
     }
 
     public void setArmPositionDeg(double angleDeg) {
-        io.setArmPosition(Units.degreesToRadians(angleDeg));
+        setArmPositionRad(Units.degreesToRadians(angleDeg));
     }
 
     public void setArmControl(double control) {

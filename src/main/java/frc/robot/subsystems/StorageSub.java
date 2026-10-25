@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -14,7 +14,6 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import frc.robot.Constants.StorageConstants;
-import frc.robot.util.LoggedTunableNumber;
 
 public class StorageSub extends SubsystemBase {
     TalonFX topRoller = new TalonFX(StorageConstants.GroundMotorID);
@@ -38,20 +37,23 @@ public class StorageSub extends SubsystemBase {
         neoConfig.idleMode(IdleMode.kBrake);
         neoConfig.smartCurrentLimit(20);
 
-        // floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    } 
+        // Was commented out: the floor motor ran on factory defaults (coast, no current limit).
+        floor.configure(neoConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    }
 
     @Override
     public void periodic() {
 
     }
 
+    /** Duty cycle in [-1, 1]. Callers used to pass volt-scale values (-12..12); clamp so "2" and "-10" stop pretending to be different speeds. */
     public void runTop(double speed){
-        topRoller.set(-speed);
+        topRoller.set(-MathUtil.clamp(speed, -1.0, 1.0));
     }
 
+    /** Duty cycle in [-1, 1]; see runTop. */
     public void runFloor(double speed){
-        floor.set(speed);
+        floor.set(MathUtil.clamp(speed, -1.0, 1.0));
     }
 
 

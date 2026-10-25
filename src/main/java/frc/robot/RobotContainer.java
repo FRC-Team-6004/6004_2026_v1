@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.PathingConstants;
 import frc.robot.Constants.visionConstants;
+import frc.robot.util.AllianceUtil;
 import frc.robot.commands.AutoCommands;
 import frc.robot.commands.IntakeIn;
 import frc.robot.commands.IntakeOut;
@@ -38,7 +38,6 @@ import frc.robot.subsystems.ShiftTimer;
 import frc.robot.subsystems.StorageSub;
 import frc.robot.subsystems.VisionSub;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.util.GridDistanceProcessing;
 import frc.robot.subsystems.shooter.Shooter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -95,13 +94,6 @@ public class RobotContainer {
 
     private final Field2d field;
 
-    private final GridDistanceProcessing gdp = new GridDistanceProcessing(
-        PathingConstants.map,
-        PathingConstants.flowX,
-        PathingConstants.flowY,
-        PathingConstants.MAP_LENGTH,
-        PathingConstants.MAP_WIDTH);
-
     double speedDecay = .8;
     double maxN = speedDecay / (1 - speedDecay);
 
@@ -124,7 +116,8 @@ public class RobotContainer {
 
         NamedCommandManager.registerNamedCommands();
 
-        autoChooser = AutoBuilder.buildAutoChooser("mid - shoot");  
+        // Must match a PathPlanner auto file name exactly; "mid - shoot" matched nothing.
+        autoChooser = AutoBuilder.buildAutoChooser("1 mid - shoot");
 
         SmartDashboard.putData("Auto Mode", autoChooser);
 
@@ -149,8 +142,8 @@ public class RobotContainer {
         );
 
         
-        joystick.x().onTrue(Commands.runOnce(() -> drivetrain.resetPose(drivetrain.getState().Pose)));
-
+        // (Removed the old X binding: it reset the pose to the pose the robot already had, and
+        // resetPose() stalls the loop 100ms via Timer.delay. Y still re-seeds field-centric.)
         joystick.y().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         // joystick.rightBumper().whileTrue(new CustomPathing(drivetrain));
@@ -169,15 +162,15 @@ public class RobotContainer {
         op.rightBumper().whileTrue(new shooterUnjam(shooter));
         op.rightBumper().whileTrue(new unjam(storageSub));
 
-        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, intake));
-        op.leftTrigger(0.05).whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 4500, 0.5));
+        op.rightTrigger(0.05).whileTrue(new ShootAtHub(drivetrain, shooter, storageSub, intake, vision));
+        op.leftTrigger(0.05).whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, () -> 4500));
 
-        joystick.leftTrigger(0.05).whileTrue(new shootOnTheMove(drivetrain, shooter, storageSub, intake, shotLUT));
+        joystick.leftTrigger(0.05).whileTrue(new shootOnTheMove(drivetrain, shooter, storageSub, intake, shotLUT, MaxSpeed, MaxAngularRate));
         joystick.rightTrigger(0.05).whileTrue(new intakeCommand(intake, storageSub));
 
 
-        op.b().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3000, 0.0));
-        op.a().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, 3500, 0.0));
+        op.b().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, () -> 3000));
+        op.a().whileTrue(ShootCommands.createShootCommand(shooter, storageSub, intake, () -> 3500));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -187,42 +180,33 @@ public class RobotContainer {
     double ys = 0;
     double rs = 0;
 
-    public void periodic() { 
+    public void periodic() {
 
         field.setRobotPose(drivetrain.getPose());
+
+        // Vision corrects the pose estimate in every mode (it used to run only in auto, so the
+        // pose drifted all through teleop while shoot-on-the-move aimed off it).
+        vision.addVisionMeasurement(drivetrain);
 
         // storageSub.runFloor(0.2);
         // storageSub.runTop(0.2);
 
         Pose2d currentPose = drivetrain.getState().Pose;
-        Pose2d targetPose = isRed() ? visionConstants.redHubPos : visionConstants.hubPos;
+        Pose2d targetPose = AllianceUtil.getHubPose();
         Translation2d robotTranslation = currentPose.getTranslation();
         Translation2d targetTranslation = targetPose.getTranslation();
-        // Vector from robot → target
-        Translation2d toTarget = targetTranslation.minus(robotTranslation);
         double distance = robotTranslation.getDistance(targetTranslation);
         Shooter.distance = distance * 1;
-        int mode = 1;
 
-        //mode 1: slippery profile
-        //mode default: reg
+        // Slippery drive profile (smoothed X/Y, direct rotation).
         double normalMaxSpeed = 0.8;
         double speedWhileIntaking = 0.65;
 
-        switch(mode) {
-            case 1 : 
-                xs += joystick.getLeftY() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                ys += joystick.getLeftX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                xs *= speedDecay;
-                ys *= speedDecay;
-                rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                break;
-            default : 
-                xs = joystick.getLeftY() * maxN * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                ys = joystick.getLeftX()* maxN * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
-                break;
-        }
+        xs += joystick.getLeftY() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
+        ys += joystick.getLeftX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
+        xs *= speedDecay;
+        ys *= speedDecay;
+        rs = joystick.getRightX() * (bounceIntake ? speedWhileIntaking : normalMaxSpeed);
         if (st.Active()) {
             led.reversedBlueGhostsMode();
         } else {
@@ -233,10 +217,6 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
         // return null;
-    }
-
-    private boolean isRed() {
-        return (drivetrain.getState().Pose.getX() > 8.25);
     }
 
 }

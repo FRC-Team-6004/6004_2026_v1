@@ -15,8 +15,9 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ShotCalc;
 import frc.robot.util.ShotLUT;
+import frc.robot.util.AllianceUtil;
+import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.visionConstants;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -39,19 +40,26 @@ public class shootOnTheMove extends Command {
 
     private static final double TOTAL_LATENCY_SEC = -0.5;
 
+    /** Flywheel is considered "at speed" within this many RPM of target before feeding. */
+    private static final double AT_SPEED_TOLERANCE_RPM = 200;
+
     private final Shooter shooterSub;
     private final StorageSub storageSub;
     private final Intake intakeSub;
 
     private final ShotCalc shotCalc;
-    private final ShotLUT shotLUT;
+
+    private final double maxSpeed;
+    private final double maxAngularRate;
 
     public shootOnTheMove(
         CommandSwerveDrivetrain drivetrain,
         Shooter shooterSub,
         StorageSub storage,
         Intake intake,
-        ShotLUT lut
+        ShotLUT lut,
+        double maxSpeed,
+        double maxAngularRate
     ) {
         t.start();
 
@@ -59,10 +67,11 @@ public class shootOnTheMove extends Command {
         this.shooterSub = shooterSub;
         this.storageSub = storage;
         this.intakeSub = intake;
-        this.shotLUT = lut;
+        this.maxSpeed = maxSpeed;
+        this.maxAngularRate = maxAngularRate;
 
         this.shotCalc = new ShotCalc();
-        this.shotCalc.loadShotLUT(this.shotLUT);
+        this.shotCalc.loadShotLUT(lut);
 
         addRequirements(drivetrain, shooterSub, storage, intake);
     }
@@ -77,10 +86,8 @@ public class shootOnTheMove extends Command {
     public void execute() {
         Pose2d currentPose = swerve.getState().Pose;
 
-        // Select correct hub
-        Translation2d hubCenter = isRed(currentPose)
-                ? visionConstants.redHubPos.getTranslation()
-                : visionConstants.hubPos.getTranslation();
+        // Select correct hub (DriverStation alliance, not field position)
+        Translation2d hubCenter = AllianceUtil.getHubPose().getTranslation();
 
         // Direction to hub
         Translation2d toHub = hubCenter.minus(currentPose.getTranslation());
@@ -101,11 +108,12 @@ public class shootOnTheMove extends Command {
         Translation2d fieldChassisSpeeds = robotChassisSpeeds
                 .rotateBy(swerve.getState().RawHeading);
 
-        // Shot calculation
+        // Shot calculation. NOTE: ShotInputs field order is (robotPose, fieldVelocity, robotVelocity, ...),
+        // so field-relative speeds go second and robot-relative speeds third (they were swapped before).
         ShotCalc.ShotInputs inputs = new ShotCalc.ShotInputs(
             currentPose,
-            robotChassisSpeeds,
             fieldChassisSpeeds,
+            robotChassisSpeeds,
             hubCenter,
             hubForward,
             1.0
@@ -116,10 +124,6 @@ public class shootOnTheMove extends Command {
         if (params.isValid() && params.confidence() > 50) {
 
             shooterSub.setRPM(params.rpm());
-
-            double hoodAngle = shotLUT.getAngle(params.solvedDistanceM());
-            // shooterSub.setServoAngle(hoodAngle);
-
 
             // Predict robot motion during latency
             Translation2d motionOffset = fieldChassisSpeeds.times(-TOTAL_LATENCY_SEC);
@@ -147,11 +151,23 @@ public class shootOnTheMove extends Command {
 
             double omega = headingError * ROT_KP;
 
+            // Driving must match teleop: negate the sticks (WPILib Y is positive pulled back)
+            // and scale to m/s. Before, raw stick values were passed as m/s: inverted and ~1 m/s max.
             swerve.setControl(
-                drive.withVelocityX(joystick.getLeftY())
-                     .withVelocityY(joystick.getLeftX())
-                     .withRotationalRate(omega)
+                drive.withVelocityX(-joystick.getLeftY() * maxSpeed)
+                     .withVelocityY(-joystick.getLeftX() * maxSpeed)
+                     .withRotationalRate(MathUtil.clamp(omega, -maxAngularRate, maxAngularRate))
             );
+
+            // Feed only on a valid shot, after spin-up, and only once the flywheel is actually at speed.
+            // Before, this ran even when the shot was invalid and the drivetrain was halted.
+            boolean atSpeed =
+                Math.abs(Math.abs(shooterSub.getRPM()) - Math.abs(params.rpm())) <= AT_SPEED_TOLERANCE_RPM;
+            if (t.get() > 0.5 && atSpeed) {
+                storageSub.runFloor(2);
+                storageSub.runTop(2);
+                intakeSub.runRollers(-2);
+            }
 
         } else {
             swerve.setControl(
@@ -159,13 +175,10 @@ public class shootOnTheMove extends Command {
                      .withVelocityY(0)
                      .withRotationalRate(0)
             );
-        }
-        if (t.get() > 0.5) {
-            // Run mechanisms
-            storageSub.runFloor(2);
-            storageSub.runTop(2);
-            intakeSub.runRollers(-2);
-            // intakeSub.setArmControl(-3);
+            // Do not feed into an un-aimed or slow flywheel.
+            storageSub.runFloor(0);
+            storageSub.runTop(0);
+            intakeSub.runRollers(0);
         }
     }
 
@@ -187,9 +200,5 @@ public class shootOnTheMove extends Command {
     @Override
     public boolean isFinished() {
         return false;
-    }
-
-    private boolean isRed(Pose2d pose) {
-        return pose.getX() > 8.25;
     }
 }

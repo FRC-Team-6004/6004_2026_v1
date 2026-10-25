@@ -49,7 +49,18 @@ public class CustomPathing extends Command {
         Pose2d currentPose = swerve.getState().Pose;
 
         int heat = gdp.heatAt(currentPose);
-        
+
+        // heat < 0 means off the map or inside a wall cell. Before, the MIN_SPEED clamp below
+        // kept the robot driving at 1.6 m/s anyway. Stop instead.
+        if (heat < 0) {
+            swerve.setControl(
+                drive.withVelocityX(0)
+                     .withVelocityY(0)
+                     .withRotationalRate(0)
+            );
+            return;
+        }
+
         /* ---------- Flow vector ---------- */
 
         double[] flow = gdp.flowVector(currentPose);

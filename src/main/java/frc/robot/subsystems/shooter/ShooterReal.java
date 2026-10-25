@@ -8,7 +8,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 
-// import edu.wpi.first.wpilibj.Servo;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterReal implements ShooterIO {
@@ -20,12 +19,7 @@ public class ShooterReal implements ShooterIO {
         .withFeedForward(2)
         .withSlot(0);
 
-    // private final Servo hood;
-    // private final Servo hood2;
-
-    // private double oldSP = 0.0;
     private double oldTRPM = 0.0;
-    // private double servoPercent = 0.0;
     private double targetRPM = 0.0;
 
     public ShooterReal() {
@@ -46,9 +40,6 @@ public class ShooterReal implements ShooterIO {
         followerMotor.getConfigurator().apply(motorConfig);
 
         followerMotor.setControl(new Follower(ShooterConstants.kLeftMotorID, MotorAlignmentValue.Opposed));
-
-        // hood = new Servo(ShooterConstants.kLeftServoPort);
-        // hood2 = new Servo(ShooterConstants.kRightServoPort);
     }
 
     @Override
@@ -61,25 +52,12 @@ public class ShooterReal implements ShooterIO {
         return motor.getVelocity().getValueAsDouble() * 60.0;
     }
 
-    // @Override
-    // public void setServoAngle(double percent) {
-    //     this.servoPercent = percent;
-    // }
-
     @Override
     public void stop() {
         this.targetRPM = 0.0;
     }
 
     public void periodic() {
-        // if (this.oldSP != this.servoPercent) {
-        //     this.oldSP = this.servoPercent;
-        //     int servo = (int) (this.servoPercent * ShooterConstants.servoRange) + ShooterConstants.servoIn;
-        //     servo = Math.max(Math.min(servo, ShooterConstants.servoOut), ShooterConstants.servoIn);
-        //     this.hood.setPulseTimeMicroseconds(servo);
-        //     this.hood2.setPulseTimeMicroseconds(servo);
-        // }
-
         if (this.oldTRPM != this.targetRPM) {
             this.oldTRPM = this.targetRPM;
             if (this.targetRPM == 0.0) {

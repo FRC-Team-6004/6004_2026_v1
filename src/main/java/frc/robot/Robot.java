@@ -7,9 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-
-import java.util.Optional;
 
 import org.ironmaple.simulation.SimulatedArena;
 
@@ -30,8 +26,6 @@ public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
-
-    public static Optional<Alliance> alliance = DriverStation.getAlliance();
 
     Orchestra orchestra = new Orchestra();
 
@@ -127,7 +121,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousPeriodic() {
-        m_robotContainer.vision.addVisionMeasurement(m_robotContainer.drivetrain);
+        // Vision measurements are added in RobotContainer.periodic() (all modes), not just here.
     }
 
     @Override
@@ -170,10 +164,6 @@ public class Robot extends LoggedRobot {
     public void simulationPeriodic() {
         SimulatedArena.getInstance().simulationPeriodic();
         Logger.recordOutput("FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
-    }
-
-    public static boolean Real() {
-        return isReal();
     }
 
 }

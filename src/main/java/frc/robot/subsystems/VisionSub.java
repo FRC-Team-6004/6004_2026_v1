@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -53,8 +54,14 @@ public class VisionSub extends SubsystemBase {
         try {
             fieldLayout = AprilTagFieldLayout.loadFromResource("/frc/robot/2026AprilTags.json");
         } catch (IOException e) {
+            // LOUD failure, not a silent one: falling back to the default field layout means every
+            // vision pose is computed against the wrong year's field. If you see this error, the
+            // 2026 layout resource is missing from the deploy, and vision should not be trusted.
+            DriverStation.reportError(
+                "VisionSub: failed to load 2026AprilTags.json, falling back to default field layout. Vision poses may be WRONG: "
+                    + e.getMessage(),
+                false);
             fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-            // throw new RuntimeException("Failed to load AprilTag layout", e);
         }
 
         hubFwdEstimator = new PhotonPoseEstimator(fieldLayout, robotToHubFwd);
