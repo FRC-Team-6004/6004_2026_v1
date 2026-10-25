@@ -303,7 +303,7 @@ public class VisionSub extends SubsystemBase {
             // Gray zone: both single-tag solutions are plausible, so pick the one whose
             // heading agrees better with the estimator (gyro-dominated) heading.
             Pose3d altPose = tagPose.get()
-                    .plus(target.getAltCameraToTarget().inverse())
+                    .plus(target.altCameraToTarget.inverse())
                     .plus(robotToCamera.inverse());
             double bestHeadingError = Math.abs(
                     bestPose.getRotation().toRotation2d().minus(estimatorHeading).getRadians());
