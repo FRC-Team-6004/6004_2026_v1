@@ -8,12 +8,16 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Rotation3d;
 
@@ -23,6 +27,8 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -191,46 +197,139 @@ public class VisionSub extends SubsystemBase {
     /* -------- Swerve Pose Estimator Integration -------- */
 
     /**
-     * Single-tag estimates can be ambiguous (two possible poses for one tag). Reject poor ones;
-     * multi-tag estimates are geometrically unambiguous, so they are always accepted. Tune this
-     * if vision stops contributing (too strict) or the pose ever jumps (too loose).
+     * Single-tag ambiguity handling, ported from Lynk Robotics' 2026 vision code.
+     * A single tag gives two plausible robot poses (best and alternate). Instead of
+     * one hard gate, this uses two tiers:
+     * <ul>
+     *   <li>ambiguity at or below AUTO_ACCEPT_AMBIGUITY: accept the best pose outright;</li>
+     *   <li>ambiguity between AUTO_ACCEPT_AMBIGUITY and SINGLE_TAG_MAX_AMBIGUITY: pick
+     *       whichever candidate heading (best or alternate) agrees better with the
+     *       estimator heading, which is gyro-dominated (see VISION_STDDEVS);</li>
+     *   <li>ambiguity above SINGLE_TAG_MAX_AMBIGUITY: reject the sighting.</li>
+     * </ul>
+     * Note this deliberately loosens the old 0.2 ceiling to 0.35: the gyro pick is what
+     * makes the wider band safe, where the old gate was guarding against a blind
+     * best-pose choice. If pose jumps ever appear, tighten SINGLE_TAG_MAX_AMBIGUITY
+     * back down before touching anything else. Multi-tag estimates are geometrically
+     * unambiguous, so they are always accepted.
      */
-    private static final double SINGLE_TAG_MAX_AMBIGUITY = 0.2;
+    private static final double AUTO_ACCEPT_AMBIGUITY = 0.1;
+    private static final double SINGLE_TAG_MAX_AMBIGUITY = 0.35;
+
+    /**
+     * Vision measurement trust, ported from Lynk: position trust stays at the
+     * WPILib default (0.9 m), while heading trust is deliberately weak (2.0 rad),
+     * so the estimator's heading stays gyro-dominated and vision corrects mainly
+     * position. Tradeoff, stated plainly: if the gyro yaw itself is wrong (bad zero,
+     * drift), vision will barely fix heading — gyro alignment becomes critical.
+     * This applies to multi-tag measurements too, matching Lynk; a tighter angular
+     * value for multi-tag only is a possible later refinement.
+     */
+    private static final Matrix<N3, N1> VISION_STDDEVS = VecBuilder.fill(0.9, 0.9, 2.0);
 
     /**
      * Fuses all three cameras into the drivetrain pose estimator for full-field localization:
-     * the forward hub camera plus the two rear swerve cameras. Each camera's latest estimate is
-     * an independent measurement, so the estimator fuses all of them rather than picking one.
-     * Called every robot loop from RobotContainer.periodic(), so this runs in teleop too.
+     * the forward hub camera plus the two rear swerve cameras. Each camera's unread frames
+     * are processed (multi-tag via the coprocessor PNP estimate, single-tag via the
+     * gyro-based disambiguation below) and every resulting measurement is fed to the
+     * estimator. Called every robot loop from RobotContainer.periodic(), so this runs
+     * in teleop too.
      */
     public void addVisionMeasurement(CommandSwerveDrivetrain drivetrain) {
-        addEstimateIfValid(drivetrain, "HubFwd", getEstimate(hubFwdCam, hubFwdEstimator));
-        addEstimateIfValid(drivetrain, "BLSwerve", getEstimate(BLSwerve, BLSwerveEstimator));
-        addEstimateIfValid(drivetrain, "BRSwerve", getEstimate(BRSwerve, BRSwerveEstimator));
+        // Estimator heading: with VISION_STDDEVS above this is gyro-dominated, which is
+        // exactly what the single-tag alternate pick below wants to compare against.
+        Rotation2d estimatorHeading = drivetrain.getState().Pose.getRotation();
+        addCameraMeasurements(drivetrain, "HubFwd", hubFwdCam, hubFwdEstimator, robotToHubFwd, estimatorHeading);
+        addCameraMeasurements(drivetrain, "BLSwerve", BLSwerve, BLSwerveEstimator, robotToBLSwerve, estimatorHeading);
+        addCameraMeasurements(drivetrain, "BRSwerve", BRSwerve, BRSwerveEstimator, robotToBRSwerve, estimatorHeading);
     }
 
-    private void addEstimateIfValid(
-            CommandSwerveDrivetrain drivetrain, String cameraName, Optional<EstimatedRobotPose> estimate) {
-        if (estimate.isEmpty()) {
+    private void addCameraMeasurements(
+            CommandSwerveDrivetrain drivetrain,
+            String cameraName,
+            PhotonCamera cam,
+            PhotonPoseEstimator estimator,
+            Transform3d robotToCamera,
+            Rotation2d estimatorHeading) {
+        for (var frame : cam.getAllUnreadResults()) {
+            Optional<EstimatedRobotPose> multiTag = estimator.estimateCoprocMultiTagPose(frame);
+            if (multiTag.isPresent()) {
+                EstimatedRobotPose visionPose = multiTag.get();
+                feedMeasurement(drivetrain, cameraName, visionPose.estimatedPose.toPose2d(),
+                        visionPose.timestampSeconds, visionPose.targetsUsed.size(), false);
+                continue;
+            }
+            processSingleTagFrame(drivetrain, cameraName, frame, robotToCamera, estimatorHeading);
+        }
+    }
+
+    private void processSingleTagFrame(
+            CommandSwerveDrivetrain drivetrain,
+            String cameraName,
+            PhotonPipelineResult frame,
+            Transform3d robotToCamera,
+            Rotation2d estimatorHeading) {
+        if (frame.targets.isEmpty()) {
             return;
         }
 
-        EstimatedRobotPose visionPose = estimate.get();
-
-        if (visionPose.targetsUsed.size() == 1) {
-            double ambiguity = visionPose.targetsUsed.get(0).getPoseAmbiguity();
-            if (ambiguity > SINGLE_TAG_MAX_AMBIGUITY) {
-                Logger.recordOutput("Vision/" + cameraName + "/RejectedAmbiguity", ambiguity);
-                return;
+        // Lowest-ambiguity target in the frame, matching the old estimateLowestAmbiguityPose behavior.
+        PhotonTrackedTarget target = null;
+        for (PhotonTrackedTarget candidate : frame.targets) {
+            if (target == null || candidate.getPoseAmbiguity() < target.getPoseAmbiguity()) {
+                target = candidate;
             }
         }
 
-        drivetrain.addVisionMeasurement(
-            visionPose.estimatedPose.toPose2d(),
-            visionPose.timestampSeconds
-        );
-        Logger.recordOutput("Vision/" + cameraName + "/Pose", visionPose.estimatedPose.toPose2d());
-        Logger.recordOutput("Vision/" + cameraName + "/TargetsUsed", (double) visionPose.targetsUsed.size());
+        double ambiguity = target.getPoseAmbiguity();
+        if (ambiguity > SINGLE_TAG_MAX_AMBIGUITY) {
+            Logger.recordOutput("Vision/" + cameraName + "/RejectedAmbiguity", ambiguity);
+            return;
+        }
+
+        Optional<Pose3d> tagPose = fieldLayout.getTagPose(target.getFiducialId());
+        if (tagPose.isEmpty()) {
+            Logger.recordOutput("Vision/" + cameraName + "/RejectedAmbiguity", ambiguity);
+            return;
+        }
+
+        Pose3d bestPose = tagPose.get()
+                .plus(target.getBestCameraToTarget().inverse())
+                .plus(robotToCamera.inverse());
+
+        boolean altPoseUsed = false;
+        Pose3d chosenPose = bestPose;
+        if (ambiguity > AUTO_ACCEPT_AMBIGUITY) {
+            // Gray zone: both single-tag solutions are plausible, so pick the one whose
+            // heading agrees better with the estimator (gyro-dominated) heading.
+            Pose3d altPose = tagPose.get()
+                    .plus(target.getAltCameraToTarget().inverse())
+                    .plus(robotToCamera.inverse());
+            double bestHeadingError = Math.abs(
+                    bestPose.getRotation().toRotation2d().minus(estimatorHeading).getRadians());
+            double altHeadingError = Math.abs(
+                    altPose.getRotation().toRotation2d().minus(estimatorHeading).getRadians());
+            if (altHeadingError < bestHeadingError) {
+                chosenPose = altPose;
+                altPoseUsed = true;
+            }
+        }
+
+        feedMeasurement(drivetrain, cameraName, chosenPose.toPose2d(),
+                frame.getTimestampSeconds(), 1, altPoseUsed);
+    }
+
+    private void feedMeasurement(
+            CommandSwerveDrivetrain drivetrain,
+            String cameraName,
+            Pose2d pose,
+            double timestampSeconds,
+            int targetsUsed,
+            boolean altPoseUsed) {
+        drivetrain.addVisionMeasurement(pose, timestampSeconds, VISION_STDDEVS);
+        Logger.recordOutput("Vision/" + cameraName + "/Pose", pose);
+        Logger.recordOutput("Vision/" + cameraName + "/TargetsUsed", (double) targetsUsed);
+        Logger.recordOutput("Vision/" + cameraName + "/AltPoseUsed", altPoseUsed);
     }
 
     @Override
