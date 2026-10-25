@@ -289,7 +289,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private void startSimThread() {
         mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
                 Seconds.of(kSimLoopPeriod),
-                Pounds.of(115), // weight with bumpers, still assumed: confirm
+                // Weight WITH bumpers and battery: 107 lbs bare + ~13 battery + ~15
+                // bumpers = ~135. Weigh the full competition configuration to confirm.
+                Pounds.of(135),
                 // Bumper OUTER size, not chassis: chassis is 28x28 and standard bumpers
                 // add ~3 in. per side, so ~34x34. Correct if bumper thickness differs.
                 Inches.of(34),
