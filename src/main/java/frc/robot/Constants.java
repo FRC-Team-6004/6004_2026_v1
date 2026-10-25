@@ -148,6 +148,10 @@ public static final int MAP_WIDTH = 32;
 
       // Hood is static: the old servo ports/ranges were dead and have been removed.
 
+      // NOTE: these are placeholders, not physical values, and the sim no longer uses
+      // them (see ShooterSim). kV = 0.39 would demand 100+ V as a rad/s feedforward,
+      // and a 12 kg m^2 flywheel would take minutes to spin up. The real robot uses
+      // TalonFX VelocityVoltage (Slot0 kP), not these constants.
       public static final double kS = 0.0; // V
       public static final double kV = 0.39; // V/RPM
       public static final double kA = 0.0; // V/(RPM/s)

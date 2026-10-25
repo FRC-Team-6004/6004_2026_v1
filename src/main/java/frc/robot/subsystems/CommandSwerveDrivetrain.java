@@ -403,4 +403,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return getState().Pose;
     }
 
+    /**
+     * Ground-truth pose in simulation (from MapleSim). The vision sim must render from
+     * this, not from the estimated pose: rendering from the estimate would make vision
+     * agree with the estimate by construction, so the pose-correction behavior under
+     * test would never be exercised. Outside sim this is just the estimated pose.
+     */
+    public Pose2d getSimulationPose() {
+        if (mapleSimSwerveDrivetrain != null) {
+            return mapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose();
+        }
+        return getState().Pose;
+    }
+
 }

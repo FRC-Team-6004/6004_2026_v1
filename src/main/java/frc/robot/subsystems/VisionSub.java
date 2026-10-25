@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import org.littletonrobotics.junction.Logger;
@@ -8,7 +9,9 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.estimator.PoseEstimator3d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -17,6 +20,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,6 +56,13 @@ public class VisionSub extends SubsystemBase {
     private PhotonPoseEstimator BLSwerveEstimator;
     private PhotonPoseEstimator BRSwerveEstimator;
 
+    /* -------- Simulation: what the cameras would see, from ground truth -------- */
+    // Only constructed in sim (RobotBase.isSimulation()). The sim cameras feed the SAME
+    // PhotonCamera objects the real code reads, so estimation, fusion, and aiming code
+    // under test is byte-identical to the real path. Nothing in this block runs on the
+    // robot.
+    private VisionSystemSim visionSim;
+
 
     public VisionSub() {
 
@@ -70,6 +83,35 @@ public class VisionSub extends SubsystemBase {
         BLSwerveEstimator = new PhotonPoseEstimator(fieldLayout, robotToBLSwerve);
         BRSwerveEstimator = new PhotonPoseEstimator(fieldLayout, robotToBRSwerve);
 
+        if (RobotBase.isSimulation()) {
+            visionSim = new VisionSystemSim("main");
+            visionSim.addAprilTags(fieldLayout);
+
+            // Placeholder camera model until the real cameras' specs are known: 640x480,
+            // 100 deg diagonal FOV, 20 FPS, 35 ms mean latency. Tune to match the hardware.
+            SimCameraProperties cameraProps = new SimCameraProperties();
+            cameraProps.setCalibration(640, 480, Rotation2d.fromDegrees(100));
+            cameraProps.setCalibError(0.25, 0.08);
+            cameraProps.setFPS(20);
+            cameraProps.setAvgLatencyMs(35);
+            cameraProps.setLatencyStdDevMs(5);
+
+            visionSim.addCamera(new PhotonCameraSim(hubFwdCam, cameraProps), robotToHubFwd);
+            visionSim.addCamera(new PhotonCameraSim(BLSwerve, cameraProps), robotToBLSwerve);
+            visionSim.addCamera(new PhotonCameraSim(BRSwerve, cameraProps), robotToBRSwerve);
+        }
+
+    }
+
+    /**
+     * Steps the simulated cameras from the ground-truth robot pose. Call once per loop
+     * from Robot.simulationPeriodic (via RobotContainer). No-op on the real robot and
+     * when sim was not constructed.
+     */
+    public void updateSim(Pose2d groundTruthPose) {
+        if (visionSim != null) {
+            visionSim.update(groundTruthPose);
+        }
     }
 
     /* -------- Internal estimation -------- */

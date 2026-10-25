@@ -214,6 +214,12 @@ public class RobotContainer {
         }
     }
 
+    /** Steps sim-only models. Called from Robot.simulationPeriodic; never runs on the robot. */
+    public void simulationPeriodic() {
+        // Ground-truth pose, NOT the estimated pose (see getSimulationPose).
+        vision.updateSim(drivetrain.getSimulationPose());
+    }
+
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
         // return null;
