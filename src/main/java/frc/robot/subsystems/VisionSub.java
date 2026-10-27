@@ -44,18 +44,18 @@ public class VisionSub extends SubsystemBase {
     private final PhotonCamera BLSwerve = new PhotonCamera("BLSwerve");
     private final PhotonCamera BRSwerve = new PhotonCamera("BRSwerve");
 
-    /* Robot -> camera transforms */
+    /* Robot -> camera transforms; pitches measured from tape-measure photos 2026-10-27 (negative pitch slot = up) */
     private final Transform3d robotToHubFwd = new Transform3d(
             new Translation3d(Units.inchesToMeters(0), Units.inchesToMeters(3), Units.inchesToMeters(20)),
-            new Rotation3d(Math.toRadians(0), Math.toRadians(27.5), Math.toRadians(0)));
+            new Rotation3d(Math.toRadians(0), Math.toRadians(-25), Math.toRadians(0)));
 
     private final Transform3d robotToBLSwerve = new Transform3d(
             new Translation3d(Units.inchesToMeters(-10.68), Units.inchesToMeters(-10.5), Units.inchesToMeters(7.875)),
-            new Rotation3d(Math.toRadians(0), Math.toRadians(28), Math.toRadians(180 - 22.5)));
+            new Rotation3d(Math.toRadians(0), Math.toRadians(-18), Math.toRadians(180 - 22.5)));
 
     private final Transform3d robotToBRSwerve = new Transform3d(
             new Translation3d(Units.inchesToMeters(10.68), Units.inchesToMeters(-10.5), Units.inchesToMeters(7.875)),
-            new Rotation3d(Math.toRadians(0), Math.toRadians(30), Math.toRadians(180 + 22.5)));
+            new Rotation3d(Math.toRadians(0), Math.toRadians(-18), Math.toRadians(180 + 22.5)));
 
     /* Pose estimators */
     private PhotonPoseEstimator hubFwdEstimator;
